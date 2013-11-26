@@ -3,7 +3,6 @@ import copy, random
 class Player:
 	def __init__(self, number, isHuman=False):
 		self.number = number
-		self.isHuman = isHuman
 		self.hand = [0 for i in range(13)]
 
 	def dealHand(self,arr):
@@ -73,6 +72,9 @@ class GameEngine:
 			if currVal > 12: currVal = 0
 			if currPlayer > len(self.players) - 1: currPlayer = 0
 
+	def playComputer(self, currVal, discardDeck, playerNum):
+		print "Player {}'s turn: "
+
 	def playHuman(self, currVal, discardDeck):
 		formattedHand = []
 		for i in range(13):
@@ -114,8 +116,8 @@ class GameEngine:
 			
 
 
-game = GameEngine(1, 2)
-game.play()
+# game = GameEngine(1, 2)
+# game.play()
 
 
 
