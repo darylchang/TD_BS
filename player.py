@@ -1,7 +1,6 @@
 import copy, random
 
 class Player:
-
 	def __init__(self, number, isHuman=False):
 		self.number = number
 		self.isHuman = isHuman
@@ -12,7 +11,6 @@ class Player:
 			self.hand[i] += 1
 
 class GameEngine:
-
 	def __init__(self, numHumans, numComputers, numDecks=1):
 		self.numHumans = numHumans
 		self.numComputers = numComputers
@@ -75,7 +73,6 @@ class GameEngine:
 			if currVal > 12: currVal = 0
 			if currPlayer > len(self.players) - 1: currPlayer = 0
 
-
 	def playHuman(self, currVal, discardDeck):
 		formattedHand = []
 		for i in range(13):
@@ -111,7 +108,8 @@ class GameEngine:
 	
 	def checkBSCall(self, currPlayer, currVal, discardDeck):
 		print "\nNo players called BS!\n"
-		print "===============================================================================\n"
+		print "=========================" + \
+		      "======================================================\n"
 		
 			
 
