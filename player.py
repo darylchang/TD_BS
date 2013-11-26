@@ -45,26 +45,44 @@ class GameEngine:
 		self.cardVals = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
 		currVal = 0
 		currPlayer = 0
-		discardDeck = [0 in range(13)]
-		print "Welcome to the card game BS! You are player 1, " + \
+		discardDeck = [0 for i in range(13)]
+		
+		print "\nWelcome to the card game BS! You are player 1, " + \
 			  "and there are {} other players.".format(len(self.players)-1)
+		print "==============================================================================="
+		print "===============================================================================\n"
 		while(True):
-			print "Player {}'s turn, must play {}\n".format(currPlayer + 1, self.cardVals[currVal])
+			print "Player {}'s turn.".format(currPlayer + 1)
 			print "Discard deck size: {}".format(sum(discardDeck))
 			for i in range(len(self.players)):
 				if i != currPlayer:
 					print "Player {}'s hand size: {}".format(i + 1, sum(self.players[i].hand))
 			if currPlayer == 0:
 				self.playHuman(currVal, discardDeck)
-			break
+				self.checkBSCall(currPlayer, currVal, discardDeck)
+				
+		
+			else:
+				self.playHuman(currVal, discardDeck)
+			
+			if sum(self.players[currPlayer].hand) == 0:
+				print "Player {} Wins!!!\n".format(currPlayer)
+				break
+				
+			#Increment current value and player	
+			currVal+=1
+			currPlayer+=1
+			if currVal > 12: currVal = 0
+			if currPlayer > len(self.players) - 1: currPlayer = 0
+
 
 	def playHuman(self, currVal, discardDeck):
-		print self.players[0].hand
 		formattedHand = []
 		for i in range(13):
 			for j in range(self.players[0].hand[i]):
 				formattedHand.append(self.cardVals[i])
 		print "Your hand: {}".format(formattedHand)
+		print "\nMust play {}\n".format(self.cardVals[currVal])
 
 		while(True):
 			isValid = True
@@ -83,15 +101,18 @@ class GameEngine:
 					print "Please enter cards you have in your hand."
 					isValid = False
 					break
-
 			if isValid:
 				break
-
+				
 		for card in cardsPlayed:
 			index = self.cardVals.index(card)
+			discardDeck[index] += 1
 			self.players[0].hand[index] -= 1
-
-		print self.players[0].hand
+	
+	def checkBSCall(self, currPlayer, currVal, discardDeck):
+		print "\nNo players called BS!\n"
+		print "===============================================================================\n"
+		
 			
 
 
