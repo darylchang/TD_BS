@@ -70,7 +70,10 @@ class Game:
 		self.discard = [0 for _ in range(13)]
 
 	def takeAction(self, action, playerNum):
-		print "Player {} puts down {} cards".format(self.currPlayer, len(action))
+		if len(action) == 1:
+			print "\nPlayer {} puts down {} card".format(self.currPlayer, len(action))
+		else:	
+			print "\nPlayer {} puts down {} cards".format(self.currPlayer, len(action))
 		player = self.players[playerNum]
 		for card in action:
 			player.hand[card] -= 1
