@@ -1,4 +1,4 @@
-import agent, game, random
+import agent, evaluation, game, random
 
 def run_game(g, agents):
 	# Welcome message
@@ -18,7 +18,7 @@ def run_game(g, agents):
 		currAgent = agents[currPlayer]
 		moves = g.getActions(currPlayer)
 		action = currAgent.getAction(moves, g)
-		g.takeAction(action, currPlayer)
+		g.takeAction(action, currPlayer, verbose=True)
 		currPlayer = g.currPlayer
 
 		# Check if anyone wants to call BS. If so, randomly select one to do so.
@@ -28,7 +28,7 @@ def run_game(g, agents):
 				callers.append(i)
 		if callers:
 			caller = random.choice(callers)
-			g.takeCall(caller)
+			g.takeCall(caller, verbose=True)
 
 		over = g.isOver()
 		print "\n=========================" + \
@@ -41,7 +41,7 @@ NUM_DECKS = 1
 NUM_COMPUTERS = 1
 
 def main(args=None):
-	arr = [agent.HumanAgent(0)]
+	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
 	for i in range(1, NUM_COMPUTERS+1):
 		arr.append(agent.HonestAgent(i))
 	g = game.Game(len(arr), NUM_DECKS)

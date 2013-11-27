@@ -1,4 +1,4 @@
-import random
+import copy, random
 
 CARD_VALS = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
 
@@ -55,6 +55,9 @@ class HumanAgent(Agent):
 		else: 
 			return False
 
+'''
+Random agent
+'''
 class RandomAgent(Agent):
     def getAction(self, moves, game):
         if moves:
@@ -89,13 +92,13 @@ class HonestAgent(Agent):
 				if move[i] != currCard: add = False
 			if add: honestMoves.append(move)
 
-		#Must be dishonest, unfortunately
+		# Must be dishonest, unfortunately
 		if not honestMoves:
 			singleMoves = []
 			for move in moves:
 				if len(move) == 1: singleMoves.append(move)
 			return random.choice(list(singleMoves))
-		#Can be honest!
+		# Can be honest!
 		else:
 			return max(honestMoves, key=lambda x: len(x))
 		
@@ -106,6 +109,40 @@ class HonestAgent(Agent):
 			print "Player {} does not call BS.".format(self.playerNum)
 			call = 'n'
 			return False
+
+"""
+Takes in an evaluation function and selects best action to take based
+on the value of the successor states. 
+"""
+class ReflexAgent(Agent):
+
+	def __init__(self, playerNum, evalFunction):
+		self.playerNum = playerNum
+		self.evaluationFunction = evalFunction
+
+	"""
+    The value of an action is calculated as the average of the successor 
+    state if someone calls BS and the successor state if someone does not
+    call BS.
+	"""
+	def getAction(self, moves, game):
+		print "Original hand: {}".format(game.players[self.playerNum].hand)
+		scoresActions = []
+		for move in moves:
+			g = game.clone()
+			g.takeAction(move, self.playerNum)
+			noCallScore = self.evaluationFunction((g, self.playerNum))
+			caller = random.choice([i for i in range(g.numPlayers) if i != self.playerNum])
+			g.takeCall(caller)
+			callScore = self.evaluationFunction((g, self.playerNum))
+			avgScore = (noCallScore + callScore) / 2
+			scoresActions.append((move, avgScore))
+		action = max(scoresActions, key=lambda x: x[1])[0]
+		return action
+
+	# TODO: Change so that it makes the call based on the subsequent evaluation score
+	def getCall(self, game):
+		return False
 
 #TODO: Fill this in
 class DishonestAgent(Agent):

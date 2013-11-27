@@ -5,7 +5,9 @@ CARD_VALS = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen
 
 class Game:
 
-	def __init__(self, numPlayers=3, numDecks=1):
+	def __init__(self, numPlayers=3, numDecks=1, 
+				 players=None, currPlayer=None, currCard=None, lastAction=None,
+				 discard=None, candidateMoves=None):
 		self.players = [Player(i) for i in range(numPlayers)]
 		self.numPlayers = numPlayers
 		self.numDecks = numDecks
@@ -44,13 +46,14 @@ class Game:
 		for i in range(len(hands)):
 			self.players[i].dealHand(hands[i])
 
-	def takeCall(self, playerNum):
+	def takeCall(self, playerNum, verbose=False):
 		caller = self.players[playerNum]
 		callee = self.players[self.currPlayer - 1]
 
 		# Reveal cards
 		cards = ', '.join([CARD_VALS[i] for i in self.lastAction])
-		print "The cards are revealed to be: {}".format(cards)
+		if verbose:
+			print "BS was called by Player {}. The cards are revealed to be: {}".format(playerNum, cards)
 
 		cardsTrue = [card == (self.currCard - 1) % 13 for card in self.lastAction]
 		isHonest = reduce(lambda x, y: x and y, cardsTrue)
@@ -58,22 +61,25 @@ class Game:
 		if not isHonest:
 			for i in range(len(self.discard)):
 				callee.hand[i] += self.discard[i]
-			print "Player {} calls BS correctly! Player {}".format(playerNum, 
-				   (self.currPlayer - 1) % self.numPlayers) + \
-				  " adds the discard pile to his hand."
+			if verbose:
+				print "Player {} calls BS correctly! Player {}".format(playerNum, 
+				   	   (self.currPlayer - 1) % self.numPlayers) + \
+				  	  " adds the discard pile to his hand."
 		# Add cards to caller's hand otherwise
 		else:
 			for i in range(len(self.discard)):
 				caller.hand[i] += self.discard[i]
-			print "Player {} calls BS incorrectly! He adds the discard".format(playerNum) + \
-				  " pile to his hand."
+			if verbose:
+				print "Player {} calls BS incorrectly! He adds the discard".format(playerNum) + \
+					  " pile to his hand."
 		self.discard = [0 for _ in range(13)]
 
-	def takeAction(self, action, playerNum):
-		if len(action) == 1:
-			print "\nPlayer {} puts down {} card".format(self.currPlayer, len(action))
-		else:	
-			print "\nPlayer {} puts down {} cards".format(self.currPlayer, len(action))
+	def takeAction(self, action, playerNum, verbose=False):
+		if verbose:
+			if len(action) == 1:
+				print "\nPlayer {} puts down {} card".format(self.currPlayer, len(action))
+			else:	
+				print "\nPlayer {} puts down {} cards".format(self.currPlayer, len(action))
 		player = self.players[playerNum]
 		for card in action:
 			player.hand[card] -= 1
@@ -123,3 +129,8 @@ class Game:
 		for i in range(len(self.players)):
 			if sum(self.players[i].hand) == 0:
 				return i
+
+	def clone(self):
+		return Game(self.numPlayers, self.numDecks, 
+				 self.players, self.currPlayer, self.currCard, self.lastAction,
+				 self.discard, self.candidateMoves)
