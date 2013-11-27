@@ -31,17 +31,21 @@ def run_game(g, agents):
 			g.takeCall(caller)
 
 		over = g.isOver()
-		print "\n"
+		print "\n=========================" + \
+		      "======================================================\n"
 
 	winner = g.winner()
 	print "The winner is player {}!".format(winner)
 
+NUM_DECKS = 1
+NUM_COMPUTERS = 1
+
 def main(args=None):
-	g = game.Game()
-	p1 = agent.HumanAgent(0)
-	p2 = agent.RandomAgent(1)
-	p3 = agent.RandomAgent(2)
-	run_game(g, [p1, p2, p3])
+	arr = [agent.HumanAgent(0)]
+	for i in range(1, NUM_COMPUTERS+1):
+		arr.append(agent.HonestAgent(i))
+	g = game.Game(len(arr), NUM_DECKS)
+	run_game(g, arr)
 
 if __name__=="__main__":
     main()

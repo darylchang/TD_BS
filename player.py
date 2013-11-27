@@ -8,7 +8,7 @@ class Player:
 	def dealHand(self,arr):
 		for i in arr:
 			self.hand[i] += 1
-
+"""
 class GameEngine:
 	def __init__(self, numHumans, numComputers, numDecks=1):
 		self.numHumans = numHumans
@@ -71,10 +71,7 @@ class GameEngine:
 			currPlayer+=1
 			if currVal > 12: currVal = 0
 			if currPlayer > len(self.players) - 1: currPlayer = 0
-
-	def playComputer(self, currVal, discardDeck, playerNum):
-		print "Player {}'s turn: "
-
+	
 	def playHuman(self, currVal, discardDeck):
 		formattedHand = []
 		for i in range(13):
@@ -107,18 +104,4 @@ class GameEngine:
 			index = self.cardVals.index(card)
 			discardDeck[index] += 1
 			self.players[0].hand[index] -= 1
-	
-	def checkBSCall(self, currPlayer, currVal, discardDeck):
-		print "\nNo players called BS!\n"
-		print "=========================" + \
-		      "======================================================\n"
-		
-			
-
-
-# game = GameEngine(1, 2)
-# game.play()
-
-
-
-
+"""
