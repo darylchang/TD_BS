@@ -1,4 +1,4 @@
-import agent, evaluation, game, random
+import agent, evaluation, game, random, itertools
 
 def run_game(g, agents):
 	# Welcome message
@@ -54,10 +54,17 @@ NUM_DECKS = 1
 NUM_COMPUTERS = 2
 
 def main(args=None):
-	arr = [agent.HumanAgent(0)]
+	# Create all possible moves
+	candidateMoves = []
+	
+	cards = [i for i in range(13)]
+	for i in range(1, 5):
+		candidateMoves += list(itertools.product(cards, repeat=i))
+	
+	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
 	for i in range(1, NUM_COMPUTERS+1):
 		arr.append(agent.DishonestAgent(i))
-	g = game.Game(len(arr), NUM_DECKS)
+	g = game.Game(candidateMoves, len(arr), NUM_DECKS)
 	run_game(g, arr)
 
 if __name__=="__main__":

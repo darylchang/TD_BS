@@ -5,9 +5,10 @@ CARD_VALS = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen
 
 class Game:
 
-	def __init__(self, numPlayers=3, numDecks=1, 
+	def __init__(self, candidateMoves, numPlayers=3, numDecks=1, 
 				 players=None, currPlayer=None, currCard=None, lastAction=None,
-				 discard=None, candidateMoves=None):
+				 discard=None):
+		self.candidateMoves = candidateMoves
 		self.players = [Player(i) for i in range(numPlayers)]
 		self.numPlayers = numPlayers
 		self.numDecks = numDecks
@@ -16,13 +17,7 @@ class Game:
 		self.lastAction = []
 		self.discard = [0 for _ in range(13)]
 		self.dealCards()
-		self.candidateMoves = []
-
-		# Create all possible moves
-		cards = [i for i in range(13)]
-		for i in range(1, 5):
-			self.candidateMoves += list(itertools.product(cards, repeat=i))
-
+		
 	def dealCards(self):
 		# Create deck of cards
 		deck = []
@@ -131,6 +126,6 @@ class Game:
 				return i
 
 	def clone(self):
-		return Game(self.numPlayers, self.numDecks, 
+		return Game(self.candidateMoves, self.numPlayers, self.numDecks, 
 				 self.players, self.currPlayer, self.currCard, self.lastAction,
-				 self.discard, self.candidateMoves)
+				 self.discard)
