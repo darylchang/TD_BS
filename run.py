@@ -21,15 +21,28 @@ def run_game(g, agents):
 		g.takeAction(action, currPlayer, verbose=True)
 		currPlayer = g.currPlayer
 
-		# Check if anyone wants to call BS. If so, randomly select one to do so.
 		callers = []
 		for i in range(len(agents)):
 			if agents[i].getCall(g):
 				callers.append(i)
+		
+		if callers:
+			arr = []
+			for i in range(len(callers)):
+				l = currPlayer + i
+				if l > len(callers): l -= len(callers) + 1
+				arr.append(l)
+			
+			caller = arr[0]
+			g.takeCall(caller, verbose=True)
+		
+		'''
+		# Check if anyone wants to call BS. If so, randomly select one to do so.
 		if callers:
 			caller = random.choice(callers)
 			g.takeCall(caller, verbose=True)
-
+		'''
+	
 		over = g.isOver()
 		print "\n=========================" + \
 		      "======================================================\n"
@@ -38,12 +51,12 @@ def run_game(g, agents):
 	print "The winner is player {}!".format(winner)
 
 NUM_DECKS = 1
-NUM_COMPUTERS = 1
+NUM_COMPUTERS = 3
 
 def main(args=None):
-	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	arr = [agent.HumanAgent(0)]
 	for i in range(1, NUM_COMPUTERS+1):
-		arr.append(agent.HonestAgent(i))
+		arr.append(agent.AlwaysCallBSAgent(i))
 	g = game.Game(len(arr), NUM_DECKS)
 	run_game(g, arr)
 

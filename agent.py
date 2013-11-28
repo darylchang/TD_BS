@@ -107,8 +107,37 @@ class HonestAgent(Agent):
 		lastPlayer = (game.currPlayer - 1) % game.numPlayers
 		if lastPlayer != self.playerNum:
 			print "Player {} does not call BS.".format(self.playerNum)
-			call = 'n'
 			return False
+	
+"""
+Similar to honestAgent, but always calls BS.
+"""
+class AlwaysCallBSAgent(Agent):
+	def getAction(self, moves, game):
+		currCard = game.currCard
+		honestMoves = []
+		for move in moves:
+			add = True
+			for i in range(len(move)):
+				if move[i] != currCard: add = False
+			if add: honestMoves.append(move)
+
+		# Must be dishonest, unfortunately
+		if not honestMoves:
+			singleMoves = []
+			for move in moves:
+				if len(move) == 1: singleMoves.append(move)
+			return random.choice(list(singleMoves))
+		# Can be honest!
+		else:
+			return max(honestMoves, key=lambda x: len(x))
+		
+		
+	def getCall(self, game):
+		lastPlayer = (game.currPlayer - 1) % game.numPlayers
+		if lastPlayer != self.playerNum:
+			print "Player {} calls BS!".format(self.playerNum)
+			return True
 
 """
 Takes in an evaluation function and selects best action to take based
