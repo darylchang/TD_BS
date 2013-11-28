@@ -56,7 +56,8 @@ class HumanAgent(Agent):
 			return False
 
 '''
-Random agent
+Random agent, plays a random move and chooses randomly wehter to call
+BS on a player
 '''
 class RandomAgent(Agent):
     def getAction(self, moves, game):
@@ -140,6 +141,32 @@ class AlwaysCallBSAgent(Agent):
 			return True
 
 """
+Dishonest "Greedy" agent, only plays dishonest, i.e. always lies and tries to get rid of
+cards as greedily as possible. Never calls BS in order to get rid of cards as
+quickly as possible.
+"""
+class DishonestAgent(Agent):
+	def getAction(self, moves, game):
+		currCard = game.currCard
+		honestMoves = []
+		maxLen = max(len(move) for move in moves)
+		greedyMoves = []
+		for move in moves:
+			if len(move) == maxLen: greedyMoves.append(move)
+		return random.choice(list(greedyMoves))
+		
+		
+				
+		
+				
+	def getCall(self, game):
+		lastPlayer = (game.currPlayer - 1) % game.numPlayers
+		if lastPlayer != self.playerNum:
+			print "Player {} does not call BS.".format(self.playerNum)
+			return False
+
+"""
+TODO: Fix this
 Takes in an evaluation function and selects best action to take based
 on the value of the successor states. 
 """
@@ -172,43 +199,3 @@ class ReflexAgent(Agent):
 	# TODO: Change so that it makes the call based on the subsequent evaluation score
 	def getCall(self, game):
 		return False
-
-#TODO: Fill this in
-class DishonestAgent(Agent):
-	def getAction(self, moves, game):
-		pass
-	
-	def getCall(self, game):
-		pass
-
-#TODO: Fill this in
-class GreedyAgent(Agent):
-	def getAction(self, moves, game):
-		pass
-	
-	def getCall(self, game):
-		pass
-
-#TODO: Fill this in
-class TDAgent(Agent):
-	def getAction(self, moves, game):
-		pass
-	
-	def getCall(self, game):
-		pass
-	
-#TODO: Fill this in
-class MinimaxAgent(Agent):
-	def getAction(self, moves, game):
-		pass
-	
-	def getCall(self, game):
-		pass
-	
-#TODO: Fill this in
-class ExpectimaxAgent(Agent):
-	def getAction(self, moves, game):
-		pass
-	
-	def getCall(self, game):
-		pass

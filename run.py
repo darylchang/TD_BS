@@ -51,12 +51,12 @@ def run_game(g, agents):
 	print "The winner is player {}!".format(winner)
 
 NUM_DECKS = 1
-NUM_COMPUTERS = 3
+NUM_COMPUTERS = 2
 
 def main(args=None):
 	arr = [agent.HumanAgent(0)]
 	for i in range(1, NUM_COMPUTERS+1):
-		arr.append(agent.AlwaysCallBSAgent(i))
+		arr.append(agent.DishonestAgent(i))
 	g = game.Game(len(arr), NUM_DECKS)
 	run_game(g, arr)
 
