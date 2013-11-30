@@ -17,7 +17,6 @@ class Agent:
 Human agent, the person playing against our computers.
 '''
 class HumanAgent(Agent):
-	
 	def getAction(self, moves, game):
 		hand = game.players[self.playerNum].hand
 		formattedHand = []
@@ -103,7 +102,6 @@ class HonestAgent(Agent):
 		else:
 			return max(honestMoves, key=lambda x: len(x))
 		
-		
 	def getCall(self, game):
 		lastPlayer = (game.currPlayer - 1) % game.numPlayers
 		if lastPlayer != self.playerNum:
@@ -154,11 +152,7 @@ class DishonestAgent(Agent):
 		for move in moves:
 			if len(move) == maxLen: greedyMoves.append(move)
 		return random.choice(list(greedyMoves))
-		
-		
-				
-		
-				
+			
 	def getCall(self, game):
 		lastPlayer = (game.currPlayer - 1) % game.numPlayers
 		if lastPlayer != self.playerNum:
@@ -171,15 +165,14 @@ Takes in an evaluation function and selects best action to take based
 on the value of the successor states. 
 """
 class ReflexAgent(Agent):
-
 	def __init__(self, playerNum, evalFunction):
 		self.playerNum = playerNum
 		self.evaluationFunction = evalFunction
 
 	"""
-    The value of an action is calculated as the average of the successor 
-    state if someone calls BS and the successor state if someone does not
-    call BS.
+	The value of an action is calculated as the average of the successor 
+	state if someone calls BS and the successor state if someone does not
+	call BS.
 	"""
 	def getAction(self, moves, game):
 		print "Original hand: {}".format(game.players[self.playerNum].hand)
@@ -198,4 +191,8 @@ class ReflexAgent(Agent):
 
 	# TODO: Change so that it makes the call based on the subsequent evaluation score
 	def getCall(self, game):
+		#noCallScore = self.evaluationFUnction((g, self.playerNum))
+		#g = game.clone()
+		#g.takeCall(self.playerNum)
+		
 		return False

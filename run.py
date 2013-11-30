@@ -26,12 +26,17 @@ def run_game(g, agents):
 			if agents[i].getCall(g):
 				callers.append(i)
 		
+		
+		
+		
 		if callers:
 			arr = []
 			for i in range(len(callers)):
-				l = currPlayer + i
-				if l > len(callers): l -= len(callers) + 1
-				arr.append(l)
+				l = (currPlayer + 1) % len(callers)
+				arr.append(l + 1)
+				break
+			
+			print arr
 			
 			caller = arr[0]
 			g.takeCall(caller, verbose=True)
@@ -61,9 +66,10 @@ def main(args=None):
 	for i in range(1, 5):
 		candidateMoves += list(itertools.product(cards, repeat=i))
 	
-	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	#arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	arr = [agent.HumanAgent(0)]
 	for i in range(1, NUM_COMPUTERS+1):
-		arr.append(agent.DishonestAgent(i))
+		arr.append(agent.AlwaysCallBSAgent(i))
 	g = game.Game(candidateMoves, len(arr), NUM_DECKS)
 	run_game(g, arr)
 
