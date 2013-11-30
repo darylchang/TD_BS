@@ -10,7 +10,7 @@ class Agent:
 	def getAction(self, moves, game):
 		raise NotImplementedError("Override me")
 
-	def getCall(self, game):
+	def getCall(self, game, verbose):
 		raise NotImplementedError("Override me")
 
 '''
@@ -39,17 +39,19 @@ class HumanAgent(Agent):
 			else:
 				return userMove
 
-	def getCall(self, game):
+	def getCall(self, game, verbose):
 		lastPlayer = (game.currPlayer - 1) % game.numPlayers
 		if lastPlayer != self.playerNum:
 			call = raw_input("Would you like to call BS?  Enter 'y' for yes " + \
 							 "and 'n' for no. If you call BS, you will be randomly " + \
 							 "selected among the callers for BS.\nEnter choice: ")
 			if call == 'y':
-				print "\nYou have called BS!"
+				if verbose:
+					print "\nYou have called BS!"
 				return True
 			elif call == 'n':
-				print "\nYou have not called BS."
+				if verbose:
+					print "\nYou have not called BS."
 				return False
 		else: 
 			return False
@@ -64,15 +66,17 @@ class RandomAgent(Agent):
             return random.choice(list(moves))
         return None
 
-    def getCall(self, game):
+    def getCall(self, game, verbose):
     	lastPlayer = (game.currPlayer - 1) % game.numPlayers
     	if lastPlayer != self.playerNum:
 	    	call = random.randint(0, 1)
 	    	if call == 0:
-			print "Player {} does not call BS.".format(self.playerNum)
+			if verbose:
+				print "Player {} does not call BS.".format(self.playerNum)
 	    		return False
 	    	else:
-			print "Player {} calls BS!".format(self.playerNum)
+			if verbose:
+				print "Player {} calls BS!".format(self.playerNum)
 	    		return True
     	else:
 	    	return False
@@ -102,10 +106,11 @@ class HonestAgent(Agent):
 		else:
 			return max(honestMoves, key=lambda x: len(x))
 		
-	def getCall(self, game):
+	def getCall(self, game, verbose):
 		lastPlayer = (game.currPlayer - 1) % game.numPlayers
 		if lastPlayer != self.playerNum:
-			print "Player {} does not call BS.".format(self.playerNum)
+			if verbose:
+				print "Player {} does not call BS.".format(self.playerNum)
 			return False
 	
 """
@@ -132,10 +137,11 @@ class AlwaysCallBSAgent(Agent):
 			return max(honestMoves, key=lambda x: len(x))
 		
 		
-	def getCall(self, game):
+	def getCall(self, game, verbose):
 		lastPlayer = (game.currPlayer - 1) % game.numPlayers
 		if lastPlayer != self.playerNum:
-			print "Player {} calls BS!".format(self.playerNum)
+			if verbose:
+				print "Player {} calls BS!".format(self.playerNum)
 			return True
 
 """
@@ -153,10 +159,11 @@ class DishonestAgent(Agent):
 			if len(move) == maxLen: greedyMoves.append(move)
 		return random.choice(list(greedyMoves))
 			
-	def getCall(self, game):
+	def getCall(self, game, verbose):
 		lastPlayer = (game.currPlayer - 1) % game.numPlayers
 		if lastPlayer != self.playerNum:
-			print "Player {} does not call BS.".format(self.playerNum)
+			if verbose:
+				print "Player {} does not call BS.".format(self.playerNum)
 			return False
 
 """
@@ -175,7 +182,7 @@ class ReflexAgent(Agent):
 	call BS.
 	"""
 	def getAction(self, moves, game):
-		print "Original hand: {}".format(game.players[self.playerNum].hand)
+		#print "Original hand: {}".format(game.players[self.playerNum].hand)
 		scoresActions = []
 		for move in moves:
 			g = game.clone()
@@ -191,7 +198,7 @@ class ReflexAgent(Agent):
 		return action
 
 	# TODO: 
-	def getCall(self, game):
+	def getCall(self, game, verbose):
 		noCallScore = self.evaluationFunction((game, self.playerNum))
 
 		# Scenario 1: Call BS incorrectly, add discard to self 
@@ -209,8 +216,9 @@ class ReflexAgent(Agent):
 		avgCallScore = (callScore1 + callScore2) / 2
 
 		if noCallScore > avgCallScore:
-			print "Player {} does not call BS.".format(self.playerNum)
+			if verbose:
+				print "Player {} does not call BS.".format(self.playerNum)
 			return False
-
-		print "Player {} calls BS!".format(self.playerNum)
+		if verbose:
+			print "Player {} calls BS!".format(self.playerNum)
 		return True
