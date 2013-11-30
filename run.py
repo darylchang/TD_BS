@@ -33,28 +33,6 @@ def run_game(g, agents):
 			# If we wrap around to the player who just played, break
 			if currCaller == (g.currPlayer - 1) % g.numPlayers:
 				break
-
-		# callers = []
-		# for i in range(len(agents)):
-		# 	if agents[i].getCall(g):
-		# 		callers.append(i)
-		
-		# if callers:
-		# 	arr = []
-		# 	for i in range(len(callers)):
-		# 		l = currPlayer + i
-		# 		if l > len(callers): l -= len(callers) + 1
-		# 		arr.append(l)
-			
-		# 	caller = arr[0]
-		# 	g.takeCall(caller, verbose=True)
-		
-		'''
-		# Check if anyone wants to call BS. If so, randomly select one to do so.
-		if callers:
-			caller = random.choice(callers)
-			g.takeCall(caller, verbose=True)
-		'''
 	
 		over = g.isOver()
 		print "\n=========================" + \
