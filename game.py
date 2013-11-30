@@ -15,14 +15,15 @@ class Game:
 				 players=None, currPlayer=None, currCard=None, lastAction=None,
 				 discard=None):
 		self.candidateMoves = candidateMoves
-		self.players = [Player(i) for i in range(numPlayers)]
+		self.players = copy.deepcopy(players) if players else [Player(i) for i in range(numPlayers)]
 		self.numPlayers = numPlayers
 		self.numDecks = numDecks
-		self.currPlayer = 0
-		self.currCard = 0
-		self.lastAction = []
-		self.discard = [0 for _ in range(13)]
-		self.dealCards()
+		self.currPlayer = currPlayer if currPlayer else 0
+		self.currCard = currCard if currCard else 0
+		self.lastAction = lastAction if lastAction else []
+		self.discard = copy.deepcopy(discard) if discard else [0 for _ in range(13)]
+		if not players:
+			self.dealCards()
 		
 	def dealCards(self):
 		# Create deck of cards
@@ -49,7 +50,7 @@ class Game:
 
 	def takeCall(self, playerNum, verbose=False):
 		caller = self.players[playerNum]
-		callee = self.players[self.currPlayer - 1]
+		callee = self.players[(self.currPlayer - 1) % self.numPlayers]
 
 		# Reveal cards
 		cards = ', '.join([CARD_VALS[i] for i in self.lastAction])
@@ -60,21 +61,21 @@ class Game:
 		isHonest = reduce(lambda x, y: x and y, cardsTrue)
 		# Add cards to player's hand if BS call is valid
 		if not isHonest:
-			self.addDiscard(callee)
+			self.addDiscard(callee.number)
 			if verbose:
 				print "Player {} calls BS correctly! Player {}".format(playerNum, 
 				   	   (self.currPlayer - 1) % self.numPlayers) + \
 				  	  " adds the discard pile to his hand."
 		# Add cards to caller's hand otherwise
 		else:
-			self.addDiscard(caller)
+			self.addDiscard(caller.number)
 			if verbose:
 				print "Player {} calls BS incorrectly! He adds the discard".format(playerNum) + \
 					  " pile to his hand."
 
-	def addDiscard(self, player):
+	def addDiscard(self, playerNum):
 		for i in range(len(self.discard)):
-			player.hand[i] += self.discard[i]
+			self.players[playerNum].hand[i] += self.discard[i]
 		self.discard = [0 for _ in range(13)]
 
 	def takeAction(self, action, playerNum, verbose=False):

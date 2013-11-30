@@ -6,7 +6,7 @@ minus the number of cards in the agent's hand.
 """
 def simpleEvaluation(state):
 	g, playerNum = state
-	V = -sum(g.players[playerNum].hand)
+	V = -1.0 * sum(g.players[playerNum].hand)
 	numOppCards = sum([sum(player.hand) for player in g.players if player.number != playerNum])
 	avgOppCards = numOppCards / float(g.numPlayers - 1)
 	V += avgOppCards

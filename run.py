@@ -53,9 +53,10 @@ def test(players, numGames=10):
 	for i in range(numGames):
 		print "On game: " + str(i + 1)
 		g = game.Game(len(players), NUM_DECKS)
-		winner = run_game(g, players, verbose=1)
+		winner = run_game(g, players, verbose=0)
 		playerWin[winner] += 1
-	print playerWin
+	for j in range(len(players)):
+		print "Player {} win rate: {}".format(j, float(playerWin[j]) / sum(playerWin))
 	
 
 def main(args=None):
@@ -64,9 +65,9 @@ def main(args=None):
 	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
 	for i in range(1, NUM_COMPUTERS+1):
 		arr.append(agent.RandomAgent(i))
-	#g = game.Game(len(arr), NUM_DECKS)
+	g = game.Game(len(arr), NUM_DECKS)
 	test(arr, 10)
-	#run_game(g, arr)
+	# run_game(g, arr)
 
 if __name__=="__main__":
     main()

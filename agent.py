@@ -43,8 +43,7 @@ class HumanAgent(Agent):
 		lastPlayer = (game.currPlayer - 1) % game.numPlayers
 		if lastPlayer != self.playerNum:
 			call = raw_input("Would you like to call BS?  Enter 'y' for yes " + \
-							 "and 'n' for no. If you call BS, you will be randomly " + \
-							 "selected among the callers for BS.\nEnter choice: ")
+							 "and 'n' for no. \nEnter choice: ")
 			if call == 'y':
 				if verbose:
 					print "\nYou have called BS!"
@@ -186,12 +185,23 @@ class ReflexAgent(Agent):
 		scoresActions = []
 		for move in moves:
 			g = game.clone()
+			# print "Equal: ", game.players[self.playerNum].hand == g.players[self.playerNum].hand
 			g.takeAction(move, self.playerNum)
 			noCallScore = self.evaluationFunction((g, self.playerNum))
 			# TODO: Change to reflect the turn-based call rule
 			caller = random.choice([i for i in range(g.numPlayers) if i != self.playerNum])
 			g.takeCall(caller)
 			callScore = self.evaluationFunction((g, self.playerNum))
+			# if sum(game.discard) > 4:
+				# print "Original hand: ", game.players[self.playerNum].hand
+				# print "Discard: ", game.discard
+				# print "Hand: ", g.players[self.playerNum].hand
+				# print "Move: ", move
+				# print "Required card: ", game.currCard
+				# print "Discard size: ", sum(game.discard)
+				# print "No call score: ", noCallScore
+				# print "Call score: ", callScore
+				# print "\n"
 			avgScore = (noCallScore + callScore) / 2
 			scoresActions.append((move, avgScore))
 		action = max(scoresActions, key=lambda x: x[1])[0]
@@ -203,13 +213,13 @@ class ReflexAgent(Agent):
 
 		# Scenario 1: Call BS incorrectly, add discard to self 
 		g1 = game.clone()
-		g1.addDiscard(g1.players[self.playerNum])
+		g1.addDiscard(self.playerNum)
 		callScore1 = self.evaluationFunction((g1, self.playerNum))
 
 		# Scenario 2: Call BS correctly, add discard to opponent
 		g2 = game.clone()
 		lastPlayer = (g2.currPlayer - 1) % g2.numPlayers
-		g2.addDiscard(g2.players[lastPlayer])
+		g2.addDiscard(lastPlayer)
 		callScore2 = self.evaluationFunction((g2, self.playerNum))
 
 		# Average the scores of the two scenarios
