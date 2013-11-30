@@ -21,20 +21,33 @@ def run_game(g, agents):
 		g.takeAction(action, currPlayer, verbose=True)
 		currPlayer = g.currPlayer
 
-		callers = []
-		for i in range(len(agents)):
-			if agents[i].getCall(g):
-				callers.append(i)
+		currCaller = g.currPlayer
+		while(True):
+			# Take the first call after the player who just played
+			call = agents[currCaller].getCall(g)
+			if call:
+				g.takeCall(currCaller, verbose=True)
+				break
+			currCaller = (currCaller + 1) % g.numPlayers
+
+			# If we wrap around to the player who just played, break
+			if currCaller == (g.currPlayer - 1) % g.numPlayers:
+				break
+
+		# callers = []
+		# for i in range(len(agents)):
+		# 	if agents[i].getCall(g):
+		# 		callers.append(i)
 		
-		if callers:
-			arr = []
-			for i in range(len(callers)):
-				l = currPlayer + i
-				if l > len(callers): l -= len(callers) + 1
-				arr.append(l)
+		# if callers:
+		# 	arr = []
+		# 	for i in range(len(callers)):
+		# 		l = currPlayer + i
+		# 		if l > len(callers): l -= len(callers) + 1
+		# 		arr.append(l)
 			
-			caller = arr[0]
-			g.takeCall(caller, verbose=True)
+		# 	caller = arr[0]
+		# 	g.takeCall(caller, verbose=True)
 		
 		'''
 		# Check if anyone wants to call BS. If so, randomly select one to do so.
@@ -54,17 +67,12 @@ NUM_DECKS = 1
 NUM_COMPUTERS = 2
 
 def main(args=None):
-	# Create all possible moves
-	candidateMoves = []
 	
-	cards = [i for i in range(13)]
-	for i in range(1, 5):
-		candidateMoves += list(itertools.product(cards, repeat=i))
-	
+	# arr = [agent.HumanAgent(0)]
 	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
 	for i in range(1, NUM_COMPUTERS+1):
-		arr.append(agent.DishonestAgent(i))
-	g = game.Game(candidateMoves, len(arr), NUM_DECKS)
+		arr.append(agent.RandomAgent(i))
+	g = game.Game(len(arr), NUM_DECKS)
 	run_game(g, arr)
 
 if __name__=="__main__":

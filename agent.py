@@ -188,6 +188,7 @@ class ReflexAgent(Agent):
 			g = game.clone()
 			g.takeAction(move, self.playerNum)
 			noCallScore = self.evaluationFunction((g, self.playerNum))
+			# TODO: Change to reflect the turn-based call rule
 			caller = random.choice([i for i in range(g.numPlayers) if i != self.playerNum])
 			g.takeCall(caller)
 			callScore = self.evaluationFunction((g, self.playerNum))
@@ -196,6 +197,27 @@ class ReflexAgent(Agent):
 		action = max(scoresActions, key=lambda x: x[1])[0]
 		return action
 
-	# TODO: Change so that it makes the call based on the subsequent evaluation score
+	# TODO: 
 	def getCall(self, game):
-		return False
+		noCallScore = self.evaluationFunction((game, self.playerNum))
+
+		# Scenario 1: Call BS incorrectly, add discard to self 
+		g1 = game.clone()
+		g1.addDiscard(g1.players[self.playerNum])
+		callScore1 = self.evaluationFunction((g1, self.playerNum))
+
+		# Scenario 2: Call BS correctly, add discard to opponent
+		g2 = game.clone()
+		lastPlayer = (g2.currPlayer - 1) % g2.numPlayers
+		g2.addDiscard(g2.players[lastPlayer])
+		callScore2 = self.evaluationFunction((g2, self.playerNum))
+
+		# Average the scores of the two scenarios
+		avgCallScore = (callScore1 + callScore2) / 2
+
+		if noCallScore > avgCallScore:
+			print "Player {} does not call BS.".format(self.playerNum)
+			return False
+
+		print "Player {} calls BS!".format(self.playerNum)
+		return True

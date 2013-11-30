@@ -3,9 +3,15 @@ import copy, itertools, random
 
 CARD_VALS = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
 
+# Create all possible moves
+candidateMoves = []
+cards = [i for i in range(13)]
+for i in range(1, 5):
+	candidateMoves += list(itertools.product(cards, repeat=i))
+
 class Game:
 
-	def __init__(self, candidateMoves, numPlayers=3, numDecks=1, 
+	def __init__(self, numPlayers=3, numDecks=1, 
 				 players=None, currPlayer=None, currCard=None, lastAction=None,
 				 discard=None):
 		self.candidateMoves = candidateMoves
@@ -54,19 +60,21 @@ class Game:
 		isHonest = reduce(lambda x, y: x and y, cardsTrue)
 		# Add cards to player's hand if BS call is valid
 		if not isHonest:
-			for i in range(len(self.discard)):
-				callee.hand[i] += self.discard[i]
+			self.addDiscard(callee)
 			if verbose:
 				print "Player {} calls BS correctly! Player {}".format(playerNum, 
 				   	   (self.currPlayer - 1) % self.numPlayers) + \
 				  	  " adds the discard pile to his hand."
 		# Add cards to caller's hand otherwise
 		else:
-			for i in range(len(self.discard)):
-				caller.hand[i] += self.discard[i]
+			self.addDiscard(caller)
 			if verbose:
 				print "Player {} calls BS incorrectly! He adds the discard".format(playerNum) + \
 					  " pile to his hand."
+
+	def addDiscard(self, player):
+		for i in range(len(self.discard)):
+			player.hand[i] += self.discard[i]
 		self.discard = [0 for _ in range(13)]
 
 	def takeAction(self, action, playerNum, verbose=False):
@@ -126,6 +134,6 @@ class Game:
 				return i
 
 	def clone(self):
-		return Game(self.candidateMoves, self.numPlayers, self.numDecks, 
+		return Game(self.numPlayers, self.numDecks, 
 				 self.players, self.currPlayer, self.currCard, self.lastAction,
 				 self.discard)
