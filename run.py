@@ -1,5 +1,8 @@
 import agent, evaluation, game, random, itertools
 
+NUM_DECKS = 1
+NUM_COMPUTERS = 2
+
 def run_game(g, agents, verbose=1):
 	# Welcome message
 	if verbose != 0:
@@ -45,8 +48,92 @@ def run_game(g, agents, verbose=1):
 	print "The winner is player {}!".format(winner)
 	return winner
 
-NUM_DECKS = 1
-NUM_COMPUTERS = 2
+def extractFeatures(state):
+	game, playerNum = state
+	features = []
+
+	# Num cards in each player's hand
+	for i in range(len(game.players)):
+		features.append(sum(game.players[i].hand))
+	
+	# Size of discard pile
+	features.append(sum(game.discard))
+
+	# Number of i of a kind you have in your hand
+	for i in range(0, 5):
+		features.append(game.players[playerNum].hand.count(i))
+
+	# Number of next two required cards you have
+	print game.currCard
+	numRemainingPlayers = (game.numPlayers - game.currPlayer + playerNum) % game.numPlayers
+	if numRemainingPlayers == 0:
+		numRemainingPlayers = game.numPlayers
+	print "Num remaining players: ", numRemainingPlayers
+	nextCard = game.currCard + numRemainingPlayers
+
+	# nextCard = (game.currCard + game.numPlayers) % 13
+	print nextCard
+	nextNextCard = (nextCard + game.numPlayers) % 13
+	print nextNextCard
+	features.append(game.players[playerNum].hand[nextCard])
+	features.append(game.players[playerNum].hand[nextNextCard])
+
+	return features
+
+def logLinearEvaluation(state, w):
+    """
+    Evaluate the current state using the log-linear evaluation
+    function.
+
+    @param state : Tuple of (game, playerNum), the game is
+    a game object (see game.py for details, and playerNum
+    is the number of the player for whose utility the state is
+    being evaluated.
+
+    @param w : List of feature weights.
+
+    @returns V : Evaluation of current game state.
+    """
+    features = extractFeatures(state)
+    dotProduct = sum([features[i] * w[i] for i in range(len(features))])
+    V = float(1)/(1 + math.exp(-dotProduct))
+    return V
+
+def TDUpdate(state, nextState, reward, w, eta):
+    """
+    Given two sequential game states, updates the weights
+    with a step size of eta, using the Temporal Difference learning
+    algorithm.
+
+    @param state : Tuple of game state (game object, player).
+    @param nextState : Tuple of game state (game object, player),
+    note if the game is over this will be None. In this case, 
+    the next value for the TD update will be 0.
+    @param reward : The reward is 1 if the game is over and your
+    player won, 0 otherwise.
+    @param w : List of feature weights.
+    @param eta : Step size for learning.
+
+    @returns w : Updated weights.
+    """
+    if nextState:
+        residual = reward + logLinearEvaluation(nextState, w) - logLinearEvaluation(state, w)
+    else: 
+        residual = reward - logLinearEvaluation(state, w)
+    phi = extractFeatures(state)
+    expTerm = math.exp(-sum([phi[i] * w[i] for i in range(len(phi))]))
+    gradCoeff = expTerm / math.pow((1 + expTerm), 2)
+    for i in range(len(w)):
+        gradient = phi[i] * gradCoeff
+        w[i] += (eta * residual * gradient)
+    return w
+
+def train(numGames=30):
+	print "hello"
+
+	# Intialize weights randomly or to 0
+	# Play a bunch of games
+	# On each turn, use TDUpdate to update the game
 
 def test(players, numGames=10):
 	playerWin = [0 for i in range(len(players))] #Our agent won, other agent won
