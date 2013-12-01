@@ -1,4 +1,4 @@
-import agent, evaluation, game, random, itertools
+import agent, evaluation, game, math, random, itertools
 
 NUM_DECKS = 1
 NUM_COMPUTERS = 2
@@ -128,30 +128,85 @@ def TDUpdate(state, nextState, reward, w, eta):
         w[i] += (eta * residual * gradient)
     return w
 
-def train(numGames=30):
-	print "hello"
+def train(numAgents=3, numGames=30):
+	alpha = 1e-1
+	numFeats = 6 + numAgents
+	w = [random.gauss(0,1e-2) for _ in range(numFeats)]
+	agents = [agent.ReflexAgent(i, logLinearEvaluation, w) for i in range(numAgents)]
 
-	# Intialize weights randomly or to 0
-	# Play a bunch of games
-	# On each turn, use TDUpdate to update the game
+	for i in range(numGames):
+		print i
+		g = game.Game(len(agents), NUM_DECKS)
 
-def test(players, numGames=10):
-	playerWin = [0 for i in range(len(players))] #Our agent won, other agent won
+		# Run game
+		over = False
+		currPlayer = 0
+		while not over:
+			states = [(g.clone(), currPlayer)]
+
+			# Get actions for current player and select one to take
+			currAgent = agents[currPlayer]
+			moves = g.getActions(currPlayer)
+			action = currAgent.getAction(moves, g)
+			g.takeAction(action, currPlayer, verbose=0)
+			currPlayer = g.currPlayer
+
+			currCaller = g.currPlayer
+			while(True):
+				# Take the first call after the player who just played
+				call = agents[currCaller].getCall(g, verbose=0)
+				states.append((g.clone(), currCaller))
+				if call:
+					g.takeCall(currCaller, verbose=0)
+					break
+				currCaller = (currCaller + 1) % g.numPlayers
+
+				# If we wrap around to the player who just played, break
+				if currCaller == (g.currPlayer - 1) % g.numPlayers:
+					break
+
+			for state in states:
+				nextState = (g, state[1])
+				w = TDUpdate(state,nextState,0,w,alpha)
+
+			for a in agents:
+				a.setWeights(w)
+
+			over = g.isOver()
+
+		winner = g.winner()
+		print "The winner is player {}!".format(winner)
+
+	# save weights
+	# fid = open("weights.bin",'w')
+	# import pickle
+	# pickle.dump(w,fid)
+	# fid.close()
+	# print w
+	return w
+
+def test(agents, numGames=10):
+	playerWin = [0 for i in range(len(agents))] #Our agent won, other agent won
 	for i in range(numGames):
 		print "On game: " + str(i + 1)
-		g = game.Game(len(players), NUM_DECKS)
-		winner = run_game(g, players, verbose=0)
+		g = game.Game(len(agents), NUM_DECKS)
+		winner = run_game(g, agents, verbose=0)
 		playerWin[winner] += 1
-	for j in range(len(players)):
+	for j in range(len(agents)):
 		print "Player {} win rate: {}".format(j, float(playerWin[j]) / sum(playerWin))
 	
 
 def main(args=None):
 	
 	# arr = [agent.HumanAgent(0)]
-	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
-	for i in range(1, NUM_COMPUTERS+1):
-		arr.append(agent.RandomAgent(i))
+	# arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	# for i in range(1, NUM_COMPUTERS+1):
+	# 	arr.append(agent.RandomAgent(i))
+	# g = game.Game(len(arr), NUM_DECKS)
+	w = train(10, 10)
+	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	for i in range(1, 10):
+	 	arr.append(agent.RandomAgent(i))
 	g = game.Game(len(arr), NUM_DECKS)
 	test(arr, 10)
 	# run_game(g, arr)

@@ -4,7 +4,7 @@ a given state (a tuple of (game, playerNum)).  The score
 is calculated as the avg number of cards in opponents' hands
 minus the number of cards in the agent's hand.
 """
-def simpleEvaluation(state):
+def simpleEvaluation(state, w):
 	g, playerNum = state
 	V = -1.0 * sum(g.players[playerNum].hand)
 	numOppCards = sum([sum(player.hand) for player in g.players if player.number != playerNum])

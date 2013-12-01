@@ -171,9 +171,13 @@ Takes in an evaluation function and selects best action to take based
 on the value of the successor states. 
 """
 class ReflexAgent(Agent):
-	def __init__(self, playerNum, evalFunction):
+	def __init__(self, playerNum, evalFunction, w=None):
 		self.playerNum = playerNum
 		self.evaluationFunction = evalFunction
+		self.w = w
+
+	def setWeights(self, w):
+		self.w = w
 
 	"""
 	The value of an action is calculated as the average of the successor 
@@ -187,11 +191,11 @@ class ReflexAgent(Agent):
 			g = game.clone()
 			# print "Equal: ", game.players[self.playerNum].hand == g.players[self.playerNum].hand
 			g.takeAction(move, self.playerNum)
-			noCallScore = self.evaluationFunction((g, self.playerNum))
+			noCallScore = self.evaluationFunction((g, self.playerNum), self.w)
 			# TODO: Change to reflect the turn-based call rule
 			caller = random.choice([i for i in range(g.numPlayers) if i != self.playerNum])
 			g.takeCall(caller)
-			callScore = self.evaluationFunction((g, self.playerNum))
+			callScore = self.evaluationFunction((g, self.playerNum), self.w)
 			# if sum(game.discard) > 4:
 				# print "Original hand: ", game.players[self.playerNum].hand
 				# print "Discard: ", game.discard
@@ -209,18 +213,18 @@ class ReflexAgent(Agent):
 
 	# TODO: 
 	def getCall(self, game, verbose):
-		noCallScore = self.evaluationFunction((game, self.playerNum))
+		noCallScore = self.evaluationFunction((game, self.playerNum), self.w)
 
 		# Scenario 1: Call BS incorrectly, add discard to self 
 		g1 = game.clone()
 		g1.addDiscard(self.playerNum)
-		callScore1 = self.evaluationFunction((g1, self.playerNum))
+		callScore1 = self.evaluationFunction((g1, self.playerNum), self.w)
 
 		# Scenario 2: Call BS correctly, add discard to opponent
 		g2 = game.clone()
 		lastPlayer = (g2.currPlayer - 1) % g2.numPlayers
 		g2.addDiscard(lastPlayer)
-		callScore2 = self.evaluationFunction((g2, self.playerNum))
+		callScore2 = self.evaluationFunction((g2, self.playerNum), self.w)
 
 		# Average the scores of the two scenarios
 		avgCallScore = (callScore1 + callScore2) / 2
