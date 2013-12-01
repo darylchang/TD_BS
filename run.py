@@ -64,19 +64,19 @@ def extractFeatures(state):
 		features.append(game.players[playerNum].hand.count(i))
 
 	# Number of next two required cards you have
+	'''
+	
 	print game.currCard
-	numRemainingPlayers = (game.numPlayers - game.currPlayer + playerNum) % game.numPlayers
-	if numRemainingPlayers == 0:
-		numRemainingPlayers = game.numPlayers
-	print "Num remaining players: ", numRemainingPlayers
-	nextCard = game.currCard + numRemainingPlayers
-
-	# nextCard = (game.currCard + game.numPlayers) % 13
-	print nextCard
+	if game.currPlayer == playerNum:
+		nextCard = (game.currCard + game.numPlayers + playerNum) % 13
+	else:
+		nextCard = (game.currCard + playerNum - game.currPlayer + game.numPlayers) % 13
 	nextNextCard = (nextCard + game.numPlayers) % 13
+	print nextCard
 	print nextNextCard
 	features.append(game.players[playerNum].hand[nextCard])
 	features.append(game.players[playerNum].hand[nextNextCard])
+	'''
 
 	return features
 
