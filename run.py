@@ -203,12 +203,36 @@ def main(args=None):
 	# for i in range(1, NUM_COMPUTERS+1):
 	# 	arr.append(agent.RandomAgent(i))
 	# g = game.Game(len(arr), NUM_DECKS)
-	w = train(10, 10)
+	w = train(3, 3)
+	print w
+	print "Log linear evaluation"
 	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
-	for i in range(1, 10):
+	for i in range(1, 3):
 	 	arr.append(agent.RandomAgent(i))
 	g = game.Game(len(arr), NUM_DECKS)
-	test(arr, 10)
+	test(arr, 20)
+
+	print "Trained agent against simple evaluation agents"
+	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	for i in range(1, 3):
+	 	arr.append(agent.ReflexAgent(i, evaluation.simpleEvaluation))
+	g = game.Game(len(arr), NUM_DECKS)
+	test(arr, 20)
+
+	print "Simple evaluation"
+	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	for i in range(1, 3):
+	 	arr.append(agent.RandomAgent(i))
+	g = game.Game(len(arr), NUM_DECKS)
+	test(arr, 20)
+
+	print "Random agent"
+	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	for i in range(1, 3):
+	 	arr.append(agent.RandomAgent(i))
+	g = game.Game(len(arr), NUM_DECKS)
+	test(arr, 20)
+
 	# run_game(g, arr)
 
 if __name__=="__main__":
