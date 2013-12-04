@@ -206,7 +206,7 @@ class ReflexAgent(Agent):
 				# print "No call score: ", noCallScore
 				# print "Call score: ", callScore
 				# print "\n"
-			avgScore = (noCallScore + callScore) / 2
+			avgScore = 0.5 * noCallScore + 0.5 * callScore #Debug
 			scoresActions.append((move, avgScore))
 		action = max(scoresActions, key=lambda x: x[1])[0]
 		return action
@@ -227,12 +227,17 @@ class ReflexAgent(Agent):
 		callScore2 = self.evaluationFunction((g2, self.playerNum), self.w)
 
 		# Average the scores of the two scenarios
-		avgCallScore = (callScore1 + callScore2) / 2
+		avgCallScore = 0.5 * callScore1 + 0.5 * callScore2 #Debug
+
+		#print noCallScore, avgCallScore #Debug
 
 		if noCallScore > avgCallScore:
+			#print "Not calling!" #Debug
 			if verbose:
 				print "Player {} does not call BS.".format(self.playerNum)
 			return False
-		if verbose:
-			print "Player {} calls BS!".format(self.playerNum)
-		return True
+		else:
+			#print "Calling!" #Debug
+			if verbose:
+				print "Player {} calls BS!".format(self.playerNum)
+			return True

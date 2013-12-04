@@ -1,8 +1,7 @@
 import agent, evaluation, game, math, random, itertools
 
 NUM_DECKS = 1
-NUM_COMPUTERS = 2
-NUM_CARDS = 4 #Must be <= 13 and non-zero
+NUM_CARDS = 5 #Must be <= 13 and non-zero
 
 def run_game(g, agents, verbose=1):
 	# Welcome message
@@ -15,6 +14,8 @@ def run_game(g, agents, verbose=1):
 	# Run game
 	over = False
 	currPlayer = 0
+	totalAgentCalls = 0.0
+	totalPossibleCalls = 0.0
 	while not over:
 		# Print turn information
 		if verbose != 0:
@@ -32,6 +33,8 @@ def run_game(g, agents, verbose=1):
 			# Take the first call after the player who just played
 			call = agents[currCaller].getCall(g, verbose)
 			if call:
+				if currCaller == 0:        #Debug
+					totalAgentCalls += 1   #Debug
 				g.takeCall(currCaller, verbose)
 				break
 			currCaller = (currCaller + 1) % g.numPlayers
@@ -39,12 +42,14 @@ def run_game(g, agents, verbose=1):
 			# If we wrap around to the player who just played, break
 			if currCaller == (g.currPlayer - 1) % g.numPlayers:
 				break
-	
+		
+		totalPossibleCalls += 1            #Debug
+
 		over = g.isOver()
 		if verbose != 0:
 			print "\n=========================" + \
 			      "======================================================\n"
-
+	#print "Frequency of agent calls: ", totalAgentCalls / totalPossibleCalls #Debug
 	winner = g.winner()
 	#print "The winner is player {}!".format(winner)
 	return winner
@@ -53,9 +58,13 @@ def extractFeatures(state):
 	game, playerNum = state
 	features = []
 
-	# Num cards in each player's hand
+	# Num cards in own hand
+	features.append(sum(game.players[playerNum].hand))
+
+	# Num cards in opponents hands
 	for i in range(len(game.players)):
-		features.append(sum(game.players[i].hand))
+		if i != playerNum:
+			features.append(sum(game.players[i].hand))
 	
 	# Size of discard pile
 	features.append(sum(game.discard))
@@ -65,19 +74,20 @@ def extractFeatures(state):
 		features.append(game.players[playerNum].hand.count(i))
 
 	# Number of next two required cards you have
-	'''
 	
-	print game.currCard
+	# print "Current player: ", game.currPlayer
+	# print "playerNum: ", playerNum
+	# print "Current Card: ", game.currCard
 	if game.currPlayer == playerNum:
-		nextCard = (game.currCard + game.numPlayers + playerNum) % 13
+		nextCard = (game.currCard + game.numPlayers) % NUM_CARDS
 	else:
-		nextCard = (game.currCard + playerNum - game.currPlayer + game.numPlayers) % 13
-	nextNextCard = (nextCard + game.numPlayers) % 13
-	print nextCard
-	print nextNextCard
+		nextCard = (game.currCard + (playerNum - game.currPlayer) % game.numPlayers) % NUM_CARDS
+	nextNextCard = (nextCard + game.numPlayers) % NUM_CARDS
+	# print "Next card: ", nextCard
+	# print "Next next card: ", nextNextCard
+	# print "\n"
 	features.append(game.players[playerNum].hand[nextCard])
 	features.append(game.players[playerNum].hand[nextNextCard])
-	'''
 
 	return features
 
@@ -131,12 +141,15 @@ def TDUpdate(state, nextState, reward, w, eta):
 
 def train(numAgents=3, numGames=30):
 	alpha = 1e-1
-	numFeats = 6 + numAgents
+	numFeats = 8 + numAgents #Debug
 	w = [random.gauss(0,1e-2) for _ in range(numFeats)]
 	agents = [agent.ReflexAgent(i, logLinearEvaluation, w) for i in range(numAgents)]
+	# agents = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	# for i in range(1, numAgents):
+	# 	agents.append(agent.ReflexAgent(i, evaluation.simpleEvaluation))
 
 	for i in range(numGames):
-		#print i
+		print i
 		g = game.Game(len(agents), NUM_DECKS)
 
 		# Run game
@@ -149,10 +162,26 @@ def train(numAgents=3, numGames=30):
 			currAgent = agents[currPlayer]
 			moves = g.getActions(currPlayer)
 			action = currAgent.getAction(moves, g)
+			# if currPlayer == 0:
+			# 		print "========================================="
+			# print "Required card: ", g.currCard
 			g.takeAction(action, currPlayer, verbose=0)
+			# print "Hands: ", g.players[0].hand, g.players[1].hand, g.players[2].hand
 			currPlayer = g.currPlayer
 
 			currCaller = g.currPlayer
+			
+			# calls = []
+			# for i in range(g.numPlayers):
+			# 	call = agents[i].getCall(g, verbose=1)
+			# 	if call:
+			# 		calls.append(i)
+			# 		states.append((g.clone(), i))
+
+			# caller = random.choice(calls) if calls else None
+			# if caller:
+			# 	g.takeCall(caller, verbose=1)
+
 			while(True):
 				# Take the first call after the player who just played
 				call = agents[currCaller].getCall(g, verbose=0)
@@ -176,6 +205,7 @@ def train(numAgents=3, numGames=30):
 			over = g.isOver()
 
 		winner = g.winner()
+		w = TDUpdate((g, winner),None, 1.0, w ,alpha)
 		#print "The winner is player {}!".format(winner)
 
 	# save weights
@@ -183,7 +213,7 @@ def train(numAgents=3, numGames=30):
 	# import pickle
 	# pickle.dump(w,fid)
 	# fid.close()
-	# print w
+	print w #Debug
 	return w
 
 def test(agents, numGames=10):
@@ -191,10 +221,11 @@ def test(agents, numGames=10):
 	for i in range(numGames):
 		#print "On game: " + str(i + 1)
 		g = game.Game(len(agents), NUM_DECKS)
-		winner = run_game(g, agents, verbose=0)
+		winner = run_game(g, agents, verbose=0) #Debug
 		playerWin[winner] += 1
 	for j in range(len(agents)):
-		print "Player {} win rate: {}".format(j, float(playerWin[j]) / sum(playerWin))
+		if j == 0: #Debug
+			print "Player {} win rate: {}".format(j, float(playerWin[j]) / sum(playerWin))
 	
 
 def main(args=None):
@@ -205,8 +236,8 @@ def main(args=None):
 	# 	arr.append(agent.RandomAgent(i))
 	# g = game.Game(len(arr), NUM_DECKS)
 	numPlayers = 3
-	numIters = 50
-	numTrials = 20
+	numIters = 5
+	numTrials = 100
 
 	print "Training on {} players for {} iterations...".format(numPlayers, numIters)
 	w = train(numPlayers, numIters)
@@ -225,13 +256,6 @@ def main(args=None):
 	g = game.Game(numPlayers, NUM_DECKS)
 	test(arr, numTrials)
 
-	print "Simple evaluation against random agents"
-	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
-	for i in range(1, numPlayers):
-	 	arr.append(agent.RandomAgent(i))
-	g = game.Game(numPlayers, NUM_DECKS)
-	test(arr, numTrials)
-
 	print "Trained agent against honest agents"
 	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
 	for i in range(1, numPlayers):
@@ -246,13 +270,47 @@ def main(args=None):
 	g = game.Game(numPlayers, NUM_DECKS)
 	test(arr, numTrials)
 
-	print "Trained agent against AlwaysCallBSAgent"
-	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	# print "Trained agent against AlwaysCallBSAgent"
+	# arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	# for i in range(1, numPlayers):
+	# 	arr.append(agent.AlwaysCallBSAgent(i))
+	# g = game.Game(numPlayers, NUM_DECKS)
+	# test(arr, numTrials)
+
+	print "Simple evaluation against random agents"
+	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
 	for i in range(1, numPlayers):
-		arr.append(agent.AlwaysCallBSAgent(i))
+	 	arr.append(agent.RandomAgent(i))
 	g = game.Game(numPlayers, NUM_DECKS)
 	test(arr, numTrials)
 
+	print "Simple agent against simple evaluation agents"
+	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	for i in range(1, numPlayers):
+	 	arr.append(agent.ReflexAgent(i, evaluation.simpleEvaluation))
+	g = game.Game(numPlayers, NUM_DECKS)
+	test(arr, numTrials)
+
+	print "Simple agent against honest agents"
+	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	for i in range(1, numPlayers):
+		arr.append(agent.HonestAgent(i))
+	g = game.Game(numPlayers, NUM_DECKS)
+	test(arr, numTrials)
+
+	print "Simple agent against dishonest agents"
+	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	for i in range(1, numPlayers):
+		arr.append(agent.DishonestAgent(i))
+	g = game.Game(numPlayers, NUM_DECKS)
+	test(arr, numTrials)
+
+	# print "Simple agent against AlwaysCallBSAgent"
+	# arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	# for i in range(1, numPlayers):
+	# 	arr.append(agent.AlwaysCallBSAgent(i))
+	# g = game.Game(numPlayers, NUM_DECKS)
+	# test(arr, numTrials)
 
 if __name__=="__main__":
     main()
