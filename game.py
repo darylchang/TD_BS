@@ -1,11 +1,11 @@
 from player import Player
-import copy, itertools, random
+import copy, itertools, random, run
 
 CARD_VALS = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
 
 # Create all possible moves
 candidateMoves = []
-cards = [i for i in range(13)]
+cards = [i for i in range(run.NUM_CARDS)]
 for i in range(1, 5):
 	candidateMoves += list(itertools.product(cards, repeat=i))
 
@@ -21,7 +21,7 @@ class Game:
 		self.currPlayer = currPlayer if currPlayer else 0
 		self.currCard = currCard if currCard else 0
 		self.lastAction = lastAction if lastAction else []
-		self.discard = copy.deepcopy(discard) if discard else [0 for _ in range(13)]
+		self.discard = copy.deepcopy(discard) if discard else [0 for _ in range(run.NUM_CARDS)]
 		if not players:
 			self.dealCards()
 		
@@ -29,12 +29,12 @@ class Game:
 		# Create deck of cards
 		deck = []
 		for i in range(4 * self.numDecks):
-			for j in range(13):
+			for j in range(run.NUM_CARDS):
 				deck.append(j)
 		random.shuffle(deck)
 		
 		# Separate into hands
-		handSize = 52 / len(self.players)
+		handSize = len(deck) / len(self.players)
 		hands = []
 		for i in range(len(self.players)):
 			if i != len(self.players) - 1:
@@ -57,7 +57,7 @@ class Game:
 		if verbose:
 			print "BS was called by Player {}. The cards are revealed to be: {}".format(playerNum, cards)
 
-		cardsTrue = [card == (self.currCard - 1) % 13 for card in self.lastAction]
+		cardsTrue = [card == (self.currCard - 1) % run.NUM_CARDS for card in self.lastAction]
 		isHonest = reduce(lambda x, y: x and y, cardsTrue)
 		# Add cards to player's hand if BS call is valid
 		if not isHonest:
@@ -76,7 +76,7 @@ class Game:
 	def addDiscard(self, playerNum):
 		for i in range(len(self.discard)):
 			self.players[playerNum].hand[i] += self.discard[i]
-		self.discard = [0 for _ in range(13)]
+		self.discard = [0 for _ in range(run.NUM_CARDS)]
 
 	def takeAction(self, action, playerNum, verbose=False):
 		if verbose:
@@ -88,7 +88,7 @@ class Game:
 		for card in action:
 			player.hand[card] -= 1
 			self.discard[card] += 1
-		self.currCard = (self.currCard + 1) % 13
+		self.currCard = (self.currCard + 1) % run.NUM_CARDS
 		self.currPlayer = (self.currPlayer + 1) % self.numPlayers
 		self.lastAction = action
 
