@@ -1,4 +1,4 @@
-import agent, evaluation, game, math, random, itertools
+import agent, copy, evaluation, game, math, random, itertools
 
 NUM_DECKS = 1
 NUM_CARDS = 5 #Must be <= 13 and non-zero
@@ -142,20 +142,34 @@ def TDUpdate(state, nextState, reward, w, eta):
 def train(numAgents=3, numGames=30):
 	alpha = 1e-1
 	numFeats = 8 + numAgents #Debug
-	w = [random.gauss(0,1e-2) for _ in range(numFeats)]
+	w = [random.gauss(1e-3, 1e-1) for _ in range(numFeats)]
 	agents = [agent.ReflexAgent(i, logLinearEvaluation, w) for i in range(numAgents)]
 	# agents = [agent.ReflexAgent(0, logLinearEvaluation, w)]
 	# for i in range(1, numAgents):
 	# 	agents.append(agent.ReflexAgent(i, evaluation.simpleEvaluation))
 
-	for i in range(numGames):
-		print i
+	i = 0
+	while i < numGames:
+		#print i
 		g = game.Game(len(agents), NUM_DECKS)
 
 		# Run game
 		over = False
 		currPlayer = 0
+
+		cycle = False
+		turnCounter = 0
+		threshold = 100
+		oldW = list(w)
+		oldAgents = copy.deepcopy(agents)
+
 		while not over:
+			if turnCounter > threshold:
+				cycle = True
+				break
+			turnCounter += 1
+			#print turnCounter
+
 			states = [(g.clone(), currPlayer)]
 
 			# Get actions for current player and select one to take
@@ -204,8 +218,14 @@ def train(numAgents=3, numGames=30):
 
 			over = g.isOver()
 
-		winner = g.winner()
-		w = TDUpdate((g, winner),None, 1.0, w ,alpha)
+		if not cycle:
+			winner = g.winner()
+			w = TDUpdate((g, winner),None, 1.0, w ,alpha)
+			i += 1
+			print "Noncycle"
+		else:
+			w = oldW
+			agents = oldAgents
 		#print "The winner is player {}!".format(winner)
 
 	# save weights
@@ -236,39 +256,39 @@ def main(args=None):
 	# 	arr.append(agent.RandomAgent(i))
 	# g = game.Game(len(arr), NUM_DECKS)
 	numPlayers = 3
-	numIters = 5
-	numTrials = 100
+	numIters = 20
+	numTrials = 10
 
-	print "Training on {} players for {} iterations...".format(numPlayers, numIters)
-	w = train(numPlayers, numIters)
+	# print "Training on {} players for {} iterations...".format(numPlayers, numIters)
+	# w = train(numPlayers, numIters)
 
-	print "Trained agent against random agents"
-	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
-	for i in range(1, numPlayers):
-	 	arr.append(agent.RandomAgent(i))
-	g = game.Game(numPlayers, NUM_DECKS)
-	test(arr, numTrials)
+	# print "Trained agent against random agents"
+	# arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	# for i in range(1, numPlayers):
+	#  	arr.append(agent.RandomAgent(i))
+	# g = game.Game(numPlayers, NUM_DECKS)
+	# test(arr, numTrials)
 
-	print "Trained agent against simple evaluation agents"
-	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
-	for i in range(1, numPlayers):
-	 	arr.append(agent.ReflexAgent(i, evaluation.simpleEvaluation))
-	g = game.Game(numPlayers, NUM_DECKS)
-	test(arr, numTrials)
+	# print "Trained agent against simple evaluation agents"
+	# arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	# for i in range(1, numPlayers):
+	#  	arr.append(agent.ReflexAgent(i, evaluation.simpleEvaluation))
+	# g = game.Game(numPlayers, NUM_DECKS)
+	# test(arr, numTrials)
 
-	print "Trained agent against honest agents"
-	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
-	for i in range(1, numPlayers):
-		arr.append(agent.HonestAgent(i))
-	g = game.Game(numPlayers, NUM_DECKS)
-	test(arr, numTrials)
+	# print "Trained agent against honest agents"
+	# arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	# for i in range(1, numPlayers):
+	# 	arr.append(agent.HonestAgent(i))
+	# g = game.Game(numPlayers, NUM_DECKS)
+	# test(arr, numTrials)
 
-	print "Trained agent against dishonest agents"
-	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
-	for i in range(1, numPlayers):
-		arr.append(agent.DishonestAgent(i))
-	g = game.Game(numPlayers, NUM_DECKS)
-	test(arr, numTrials)
+	# print "Trained agent against dishonest agents"
+	# arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	# for i in range(1, numPlayers):
+	# 	arr.append(agent.DishonestAgent(i))
+	# g = game.Game(numPlayers, NUM_DECKS)
+	# test(arr, numTrials)
 
 	# print "Trained agent against AlwaysCallBSAgent"
 	# arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
@@ -277,33 +297,33 @@ def main(args=None):
 	# g = game.Game(numPlayers, NUM_DECKS)
 	# test(arr, numTrials)
 
-	print "Simple evaluation against random agents"
-	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
-	for i in range(1, numPlayers):
-	 	arr.append(agent.RandomAgent(i))
-	g = game.Game(numPlayers, NUM_DECKS)
-	test(arr, numTrials)
+	# print "Simple evaluation against random agents"
+	# arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	# for i in range(1, numPlayers):
+	#  	arr.append(agent.RandomAgent(i))
+	# g = game.Game(numPlayers, NUM_DECKS)
+	# test(arr, numTrials)
 
-	print "Simple agent against simple evaluation agents"
-	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
-	for i in range(1, numPlayers):
-	 	arr.append(agent.ReflexAgent(i, evaluation.simpleEvaluation))
-	g = game.Game(numPlayers, NUM_DECKS)
-	test(arr, numTrials)
+	# print "Simple agent against simple evaluation agents"
+	# arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	# for i in range(1, numPlayers):
+	#  	arr.append(agent.ReflexAgent(i, evaluation.simpleEvaluation))
+	# g = game.Game(numPlayers, NUM_DECKS)
+	# test(arr, numTrials)
 
-	print "Simple agent against honest agents"
-	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
-	for i in range(1, numPlayers):
-		arr.append(agent.HonestAgent(i))
-	g = game.Game(numPlayers, NUM_DECKS)
-	test(arr, numTrials)
+	# print "Simple agent against honest agents"
+	# arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	# for i in range(1, numPlayers):
+	# 	arr.append(agent.HonestAgent(i))
+	# g = game.Game(numPlayers, NUM_DECKS)
+	# test(arr, numTrials)
 
-	print "Simple agent against dishonest agents"
-	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
-	for i in range(1, numPlayers):
-		arr.append(agent.DishonestAgent(i))
-	g = game.Game(numPlayers, NUM_DECKS)
-	test(arr, numTrials)
+	# print "Simple agent against dishonest agents"
+	# arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
+	# for i in range(1, numPlayers):
+	# 	arr.append(agent.DishonestAgent(i))
+	# g = game.Game(numPlayers, NUM_DECKS)
+	# test(arr, numTrials)
 
 	# print "Simple agent against AlwaysCallBSAgent"
 	# arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
@@ -311,6 +331,10 @@ def main(args=None):
 	# 	arr.append(agent.AlwaysCallBSAgent(i))
 	# g = game.Game(numPlayers, NUM_DECKS)
 	# test(arr, numTrials)
+
+	while True:
+		g = game.Game(numPlayers, NUM_DECKS)
+		run_game(g, [agent.HumanAgent(0), agent.ReflexAgent(1, evaluation.simpleEvaluation), agent.ReflexAgent(2, evaluation.simpleEvaluation)])
 
 if __name__=="__main__":
     main()

@@ -227,7 +227,9 @@ class ReflexAgent(Agent):
 		callScore2 = self.evaluationFunction((g2, self.playerNum), self.w)
 
 		# Average the scores of the two scenarios
-		avgCallScore = 0.5 * callScore1 + 0.5 * callScore2 #Debug
+		prob = random.random() #Debug
+		avgCallScore = prob * callScore1 + (1-prob) * callScore2 #Debug
+		# avgCallScore = 0.5 * callScore1 + 0.5 * callScore2 #Debug
 
 		#print noCallScore, avgCallScore #Debug
 
