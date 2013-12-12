@@ -144,13 +144,25 @@ def TDUpdate(state, nextState, reward, w, eta):
 def train(numAgents=3, numGames=30):
 	alpha = 1e-1
 	numFeats = 8 + numAgents + NUM_CARDS #Debug 
-	w = [random.gauss(1e-3, 1e-1) for _ in range(numFeats)]
-	agents = [agent.ReflexAgent(i, logLinearEvaluation, w) for i in range(numAgents)]
+	
+	weightVector = []
+	for i in range(numAgents):
+		weight = [random.gauss(1e-3, 1e-1) for _ in range(numFeats)]
+		weightVector.append(weight)
+	
+	agents = [agent.ReflexAgent(i, logLinearEvaluation, weightVector[i]) for i in range(numAgents)]
+	
+	
+	#Single weight vector
+	#w = [random.gauss(1e-3, 1e-1) for _ in range(numFeats)]
+	#agents = [agent.ReflexAgent(i, logLinearEvaluation, w) for i in range(numAgents)]
+
 	# agents = [agent.ReflexAgent(0, logLinearEvaluation, w)]
 	# for i in range(1, numAgents):
 	# 	agents.append(agent.ReflexAgent(i, evaluation.simpleEvaluation))
 
 	i = 0
+	winners = [0 for i in range(numAgents)]
 	while i < numGames:
 		#print i
 		g = game.Game(len(agents), NUM_DECKS)
@@ -162,7 +174,7 @@ def train(numAgents=3, numGames=30):
 		cycle = False
 		turnCounter = 0
 		threshold = 100
-		oldW = list(w)
+		oldW = list(weightVector[currPlayer])
 		oldAgents = copy.deepcopy(agents)
 
 		while not over:
@@ -187,17 +199,6 @@ def train(numAgents=3, numGames=30):
 
 			currCaller = g.currPlayer
 			
-			# calls = []
-			# for i in range(g.numPlayers):
-			# 	call = agents[i].getCall(g, verbose=1)
-			# 	if call:
-			# 		calls.append(i)
-			# 		states.append((g.clone(), i))
-
-			# caller = random.choice(calls) if calls else None
-			# if caller:
-			# 	g.takeCall(caller, verbose=1)
-
 			while(True):
 				# Take the first call after the player who just played
 				call = agents[currCaller].getCall(g, verbose=0)
@@ -213,30 +214,30 @@ def train(numAgents=3, numGames=30):
 
 			for state in states:
 				nextState = (g, state[1])
-				w = TDUpdate(state,nextState,0,w,alpha)
+				weightVector[currPlayer] = TDUpdate(state,nextState,0, weightVector[currPlayer],alpha)
 
 			for a in agents:
-				a.setWeights(w)
+				a.setWeights(weightVector[currPlayer])
 
 			over = g.isOver()
 
 		if not cycle:
 			winner = g.winner()
-			w = TDUpdate((g, winner),None, 1.0, w ,alpha)
+			weightVector[winner] = TDUpdate((g, winner),None, 1.0, weightVector[winner] ,alpha)
 			i += 1
 			print "Noncycle"
+			winners[winner] += 1
 		else:
 			w = oldW
 			agents = oldAgents
 		#print "The winner is player {}!".format(winner)
 
-	# save weights
-	# fid = open("weights.bin",'w')
-	# import pickle
-	# pickle.dump(w,fid)
-	# fid.close()
-	print w #Debug
-	return w
+	#print weightVector #Debug
+	#print winners.index(max(winners))	
+	
+	#Get weight vector that won the most
+	index = winners.index(max(winners))
+	return weightVector[index]
 
 def test(agents, numGames=10):
 	playerWin = [0 for i in range(len(agents))] #Our agent won, other agent won
@@ -258,9 +259,9 @@ def main(args=None):
 	# 	arr.append(agent.RandomAgent(i))
 	# g = game.Game(len(arr), NUM_DECKS)
 	numPlayers = 3
-	numIters = 200
+	numIters = 50
 	numTrials = 100
-	'''
+	
 	print "Training on {} players for {} iterations...".format(numPlayers, numIters)
 	w = train(numPlayers, numIters)
 
@@ -298,7 +299,7 @@ def main(args=None):
 	#       arr.append(agent.AlwaysCallBSAgent(i))
 	#g = game.Game(numPlayers, NUM_DECKS)
 	#test(arr, numTrials)
-	'''
+	
 	print "Simple evaluation against random agents"
 	arr = [agent.ReflexAgent(0, evaluation.simpleEvaluation)]
 	for i in range(1, numPlayers):
@@ -334,9 +335,9 @@ def main(args=None):
 	#g = game.Game(numPlayers, NUM_DECKS)
 	#test(arr, numTrials)
 
-	while True:
-		g = game.Game(numPlayers, NUM_DECKS)
-		run_game(g, [agent.HumanAgent(0), agent.ReflexAgent(1, logLinearEvaluation, w), agent.ReflexAgent(2, logLinearEvaluation, w)])
+	#while True:
+	#	g = game.Game(numPlayers, NUM_DECKS)
+	#	run_game(g, [agent.HumanAgent(0), agent.ReflexAgent(1, logLinearEvaluation, w), agent.ReflexAgent(2, logLinearEvaluation, w)])
 
 if __name__=="__main__":
     main()
