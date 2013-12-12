@@ -61,9 +61,45 @@ BS on a player
 '''
 class RandomAgent(Agent):
     def getAction(self, moves, game):
-        if moves:
-            return random.choice(list(moves))
-        return None
+        currCard = game.currCard
+	honestMoves = []
+	dishonestMoves = []
+	for move in moves:
+		add = True
+		for i in range(len(move)):
+			if move[i] != currCard: add = False
+		if add:
+			honestMoves.append(move)
+		else:
+			dishonestMoves.append(move)
+
+	# Must be dishonest, unfortunately
+	if not honestMoves:
+		if dishonestMoves:
+			return random.choice(dishonestMoves)
+		else:
+			raise Exception("NO MOVES")
+
+	else:
+		if not dishonestMoves:
+			if honestMoves:
+				return random.choice(honestMoves)
+			else:
+				raise Exception("NO MOVES")
+
+	# Can be honest!
+		else:
+			prob = 0.5
+			x = random.random()
+			if x > prob:
+				return random.choice(list(honestMoves))
+			else:
+				return random.choice(dishonestMoves)
+	
+	
+	#if moves:
+        #    return random.choice(list(moves))
+        #return None
 
     def getCall(self, game, verbose):
     	lastPlayer = (game.currPlayer - 1) % game.numPlayers
