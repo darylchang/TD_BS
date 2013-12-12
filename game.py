@@ -48,6 +48,7 @@ class Game:
 		for i in range(len(hands)):
 			self.players[i].dealHand(hands[i])
 
+	# Returns True if call was correct, False if call was incorrect
 	def takeCall(self, playerNum, verbose=False):
 		caller = self.players[playerNum]
 		callee = self.players[(self.currPlayer - 1) % self.numPlayers]
@@ -66,12 +67,14 @@ class Game:
 				print "Player {} calls BS correctly! Player {}".format(playerNum, 
 				   	   (self.currPlayer - 1) % self.numPlayers) + \
 				  	  " adds the discard pile to his hand."
+				return True
 		# Add cards to caller's hand otherwise
 		else:
 			self.addDiscard(caller.number)
 			if verbose:
 				print "Player {} calls BS incorrectly! He adds the discard".format(playerNum) + \
 					  " pile to his hand."
+				return False
 
 	def addDiscard(self, playerNum):
 		for i in range(len(self.discard)):

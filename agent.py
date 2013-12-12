@@ -279,3 +279,93 @@ class ReflexAgent(Agent):
 			if verbose:
 				print "Player {} calls BS!".format(self.playerNum)
 			return True
+
+"""
+Same as ReflexAgent, except can learn opponents'
+policies over the course of a game.
+"""
+class ModelReflexAgent(Agent):
+	def __init__(self, playerNum, numPlayers, evalFunction, w=None):
+		self.playerNum = playerNum
+		self.numPlayers = numPlayers
+		self.oppLieProbs = [[0., 1.] for i in range(numPlayers)]
+		self.oppCallProbs = [[0., 1.] for i in range(numPlayers)]
+		#print self.oppLieProbs #Debug
+		#print self.oppCallProbs #Debug
+		self.evaluationFunction = evalFunction
+		self.w = w
+
+	def setWeights(self, w):
+		self.w = w
+
+	"""
+	The value of an action is calculated as the weighted average of the 
+	successor state if someone calls BS and the successor state if 
+	someone does not call BS.
+	"""
+	def getAction(self, moves, game):
+		scoresActions = []
+		oppNoCallProbs = [1.0 - (prob[0] / prob[1]) for prob in self.oppCallProbs]
+		probNoCall = reduce(lambda x,y: x * y, oppNoCallProbs, 1)
+		probCall = 1.0 - probNoCall
+		#print "Prob no call is ", probNoCall #Debug
+		#print "Prob call is ", probCall #Debug
+
+		for move in moves:
+			g = game.clone()
+			g.takeAction(move, self.playerNum)
+			noCallScore = self.evaluationFunction((g, self.playerNum), self.w)
+			caller = random.choice([i for i in range(g.numPlayers) if i != self.playerNum])
+			g.takeCall(caller)
+			callScore = self.evaluationFunction((g, self.playerNum), self.w)
+
+			avgScore = probNoCall * noCallScore + probCall * callScore #Debug
+			scoresActions.append((move, avgScore))
+		action = max(scoresActions, key=lambda x: x[1])[0]
+		return action
+
+	# TODO: 
+	def getCall(self, game, verbose):
+		noCallScore = self.evaluationFunction((game, self.playerNum), self.w)
+
+		# Scenario 1: Call BS incorrectly, add discard to self 
+		g1 = game.clone()
+		g1.addDiscard(self.playerNum)
+		callScore1 = self.evaluationFunction((g1, self.playerNum), self.w)
+
+		# Scenario 2: Call BS correctly, add discard to opponent
+		g2 = game.clone()
+		lastPlayer = (g2.currPlayer - 1) % g2.numPlayers
+		g2.addDiscard(lastPlayer)
+		callScore2 = self.evaluationFunction((g2, self.playerNum), self.w)
+
+		# Average the scores of the two scenarios
+		currPlayer = (game.currPlayer - 1) % game.numPlayers
+		probLie = self.oppLieProbs[currPlayer][0] / self.oppLieProbs[currPlayer][1]
+		probHonest = 1.0 - probLie
+		# print "Player", (game.currPlayer - 1) % game.numPlayers, "is lying with probability ", probLie #Debug
+		avgCallScore = probHonest * callScore1 + probLie * callScore2 #Debug
+
+		#print noCallScore, avgCallScore
+
+		if noCallScore > avgCallScore:
+			#print "Not calling!" #Debug
+			if verbose:
+				print "Player {} does not call BS.".format(self.playerNum)
+			return False
+		else:
+			#print "Calling!" #Debug
+			if verbose:
+				print "Player {} calls BS!".format(self.playerNum)
+			return True
+
+	def updateCallProb(self, playerNum, call):
+		self.oppCallProbs[playerNum][1] += 1
+		if call:
+			self.oppCallProbs[playerNum][0] += 1
+
+	def updateLieProb(self, playerNum, isLying):
+		self.oppLieProbs[playerNum][1] += 1
+		if isLying:
+			self.oppLieProbs[playerNum][0] += 1
+		
