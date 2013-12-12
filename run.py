@@ -149,7 +149,31 @@ def TDUpdate(state, nextState, reward, w, eta):
         w[i] += (eta * residual * gradient)
     return w
 
-def train(numAgents=3, numGames=30):
+def tournament(numPlayers, numIters, numContenders = 27):
+	tournamentArr = []
+	for i in range(numContenders):
+		tournamentArr.append(train(numPlayers, numIters))
+	
+	while(len(tournamentArr) != 1):
+		print len(tournamentArr)
+		newArr = []
+		iterable = iter(tournamentArr)
+		for i in iterable:
+			weights = [i, iterable.next(), iterable.next()]
+			print "WEIGHT"
+			print weights
+			print "WEIGHT"
+			w = train(numPlayers, numIters, weights)
+			newArr.append(w)
+			
+		tournamentArr = newArr
+	
+	return tournamentArr[0]
+
+
+#Copy of train, updates even on cycles (For tournament play)
+def train(numAgents=3, numGames=30, weights = None): 
+	print "Training on {} players for {} iterations...".format(numAgents, numGames)
 	alpha = 1e-1
 	numFeats = 8 + numAgents + NUM_CARDS #Debug 
 	
@@ -158,7 +182,125 @@ def train(numAgents=3, numGames=30):
 		weight = [random.gauss(1e-3, 1e-1) for _ in range(numFeats)]
 		weightVector.append(weight)
 	
-	agents = [agent.ModelReflexAgent(i, numAgents, logLinearEvaluation, weightVector[i]) for i in range(numAgents)]
+	if not weights:
+		agents = [agent.ModelReflexAgent(i, numAgents, logLinearEvaluation, weightVector[i]) for i in range(numAgents)]
+	else:
+		print "initialize"
+		agents = []
+		for i in range(len(weights)):
+			agents.append(agent.ModelReflexAgent(i, numAgents, logLinearEvaluation, weights[i]))
+			
+	# Initialize array of model based reflex agents
+	modelReflexAgents = [a.playerNum for a in agents if isinstance(a, agent.ModelReflexAgent)]
+	
+	#Single weight vector
+	#w = [random.gauss(1e-3, 1e-1) for _ in range(numFeats)]
+	#agents = [agent.ReflexAgent(i, logLinearEvaluation, w) for i in range(numAgents)]
+
+	# agents = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	# for i in range(1, numAgents):
+	# 	agents.append(agent.ReflexAgent(i, evaluation.simpleEvaluation))
+
+	i = 0
+	winners = [0 for i in range(numAgents)]
+	while i < numGames:
+		#print i
+		g = game.Game(len(agents), NUM_DECKS)
+
+		# Run game
+		over = False
+		currPlayer = 0
+
+		cycle = False
+		turnCounter = 0
+		threshold = 100
+		oldW = list(weightVector[currPlayer])
+		oldAgents = copy.deepcopy(agents)
+
+		while not over:
+			if turnCounter > threshold:
+				cycle = True
+				break
+			turnCounter += 1
+			#print turnCounter
+
+			states = [(g.clone(), currPlayer)]
+
+			# Get actions for current player and select one to take
+			currAgent = agents[currPlayer]
+			moves = g.getActions(currPlayer)
+			action = currAgent.getAction(moves, g)
+			# if currPlayer == 0:
+			# 		print "========================================="
+			# print "Required card: ", g.currCard
+			currPlayer = g.currPlayer
+			g.takeAction(action, currPlayer, verbose=0)
+			# print "Hands: ", g.players[0].hand, g.players[1].hand, g.players[2].hand
+
+			currCaller = g.currPlayer
+			
+			while(True):
+				# Take the first call after the player who just played
+				call = agents[currCaller].getCall(g, verbose=0)
+				for a in modelReflexAgents:
+					agents[a].updateCallProb(currCaller, call)
+				#states.append((g.clone(), currCaller))
+				if call:
+					isLying = g.takeCall(currCaller, verbose=0)
+					for a in modelReflexAgents:
+						agents[a].updateLieProb(currPlayer, isLying)
+					break
+				currCaller = (currCaller + 1) % g.numPlayers
+
+				# If we wrap around to the player who just played, break
+				if currCaller == currPlayer:
+					break
+
+			for state in states:
+				nextState = (g, state[1])
+				weightVector[currPlayer] = TDUpdate(state,nextState,0, weightVector[currPlayer],alpha)
+
+			agents[currPlayer].setWeights(weightVector[currPlayer])
+
+			currPlayer = g.currPlayer
+			over = g.isOver()
+
+		if not cycle:
+			winner = g.winner()
+			weightVector[winner] = TDUpdate((g, winner),None, 1.0, weightVector[winner] ,alpha)
+			i += 1
+			print "Noncycle"
+			winners[winner] += 1
+		else:
+			i += 1
+			print "Cycle"
+			w = oldW
+			agents = oldAgents
+
+	#print weightVector #Debug
+	#print winners.index(max(winners))	
+	
+	#Get weight vector that won the most
+	index = winners.index(max(winners))
+	return weightVector[index]
+
+'''
+def train(numAgents=3, numGames=30, weights = []):
+	alpha = 1e-1
+	numFeats = 8 + numAgents + NUM_CARDS #Debug 
+	
+	weightVector = []
+	for i in range(numAgents):
+		weight = [random.gauss(1e-3, 1e-1) for _ in range(numFeats)]
+		weightVector.append(weight)
+	
+	if not weights:
+		agents = [agent.ModelReflexAgent(i, numAgents, logLinearEvaluation, weightVector[i]) for i in range(numAgents)]
+	else:
+		agents = []
+		for i in range(len(weights)):
+			agents.append(agent.ModelReflexAgent(i, numAgents, logLinearEvaluation, weights[i]))
+			
 	# Initialize array of model based reflex agents
 	modelReflexAgents = [a.playerNum for a in agents if isinstance(a, agent.ModelReflexAgent)]
 
@@ -251,6 +393,9 @@ def train(numAgents=3, numGames=30):
 	#Get weight vector that won the most
 	index = winners.index(max(winners))
 	return weightVector[index]
+'''
+
+
 
 def test(agents, numGames=10):
 	playerWin = [0 for i in range(len(agents))] #Our agent won, other agent won
@@ -275,8 +420,8 @@ def main(args=None):
 	numIters = 50
 	numTrials = 50
 
-	print "Training on {} players for {} iterations...".format(numPlayers, numIters)
-	w = train(numPlayers, numIters)
+	w = tournament(numPlayers, numIters, 27)
+	#w = train(numPlayers, numIters)
 	print w
 
 	print "Model based reflex agent against random agents"
@@ -290,6 +435,20 @@ def main(args=None):
 	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
 	arr.append(agent.RandomAgent(1))
 	arr.append(agent.RandomAgent(2))
+	g = game.Game(numPlayers, NUM_DECKS)
+	test(arr, numTrials)
+	
+	print "Model based reflex agent against simple agents"
+	arr = [agent.ModelReflexAgent(0, numPlayers, logLinearEvaluation, w)]
+	arr.append(agent.ReflexAgent(1, evaluation.simpleEvaluation))
+	arr.append(agent.ReflexAgent(2, evaluation.simpleEvaluation))
+	g = game.Game(numPlayers, NUM_DECKS)
+	test(arr, numTrials)
+
+	print "Regular reflex agent against simple agents"
+	arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
+	arr.append(agent.ReflexAgent(1, evaluation.simpleEvaluation))
+	arr.append(agent.ReflexAgent(2, evaluation.simpleEvaluation))
 	g = game.Game(numPlayers, NUM_DECKS)
 	test(arr, numTrials)
 
