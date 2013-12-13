@@ -18,19 +18,19 @@ results.xlsx - Raw data for all test results.
 Please use 'python run.py' to run a series of games.
 Command line options:
 
--train [# of training games]
+-train [# of training games]. Default 50.
 
--run [# of runs]
+-run [# of runs]. Default 10.
 
--p [# of players]
+-p [# of players]. Default 3.
 
--test [# of test games]
+-test [# of test games]. Default 100.
 
--agent [random/simple/honest/dishonest/bs/model/reflex] (i.e. type of agent)
+-agent [random/simple/honest/dishonest/bs/model/reflex] (i.e. type of agent). Default model-based reflex agent.
 
--opp [random/simple/honest/dishonest/bs] (i.e. type of opponents)
+-opp [random/simple/honest/dishonest/bs] (i.e. type of opponents). Default simple reflex agent.
 
--tournament [y/n] (whether or not to use tournament-style training)
+-tournament [y/n] (whether or not to use tournament-style training). Default 'n'.
 
--human [y/n] (y if you want to play a game against the opponents yourself)
+-human [y/n] (y if you want to play a game against the opponents yourself) Default 'n'.
 
