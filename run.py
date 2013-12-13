@@ -279,7 +279,7 @@ def main(args=None):
 	namespace = parser.parse_args()
 	
 	numPlayers = int(getattr(namespace, 'p')) if getattr(namespace, 'p') else 3
-	numTrainGames = int(getattr(namespace, 'trainGames'))if getattr(namespace, 'trainGames') else 50
+	numTrainGames = int(getattr(namespace, 'trainGames')) if getattr(namespace, 'trainGames') else 50
 	numTestGames = int(getattr(namespace, 'test')) if getattr(namespace, 'test') else 100
 	numRuns = int(getattr(namespace, 'run')) if getattr(namespace, 'run') else 10
 	agentType = getattr(namespace, 'agent') if getattr(namespace, 'agent') else 'model'

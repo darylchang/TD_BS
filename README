@@ -1,17 +1,14 @@
+Training BS Agents Using TD Learning
+Addison Weiler and Daryl Chang
+
 Description of files:
 
 run.py - The main file that executes TD learning, trains, and tests agents.
-
 agent.py - Contains implementation of the different agents.
-
 game.py - Implementation of the Game class.
-
 player.py - Implementation of a player (used in the Game class).
-
 evaluation.py - Contains implementation of the simple evaluation function.
-
 test.py - Unit tests to test extractFeatures and simpleEvaluation.
-
 results.xlsx - Raw data for all test results.
 
 --------------------------------------------------------------------------
