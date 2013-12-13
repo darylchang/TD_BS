@@ -67,14 +67,14 @@ class Game:
 				print "Player {} calls BS correctly! Player {}".format(playerNum, 
 				   	   (self.currPlayer - 1) % self.numPlayers) + \
 				  	  " adds the discard pile to his hand."
-				return True
+			return True
 		# Add cards to caller's hand otherwise
 		else:
 			self.addDiscard(caller.number)
 			if verbose:
 				print "Player {} calls BS incorrectly! He adds the discard".format(playerNum) + \
 					  " pile to his hand."
-				return False
+			return False
 
 	def addDiscard(self, playerNum):
 		for i in range(len(self.discard)):
