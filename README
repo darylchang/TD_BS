@@ -13,6 +13,7 @@ evaluation.py - Contains implementation of the simple evaluation function.
 test.py - Unit tests to test extractFeatures and simpleEvaluation.
 
 --------------------------------------------------------------------------
+Please use 'python run.py' to run a series of games.
 Command line options:
 
 -train [# of training games]
