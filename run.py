@@ -188,7 +188,8 @@ def train(numAgents=3, numGames=50, isModel=False, weights = None):
 	modelReflexAgents = [a.playerNum for a in agents if isinstance(a, agent.ModelReflexAgent)]
 
 	i = 0
-	winners = [0 for i in range(numAgents)]
+	winners = [0 for j in range(numAgents)]
+	numGames = int(numGames)
 	while i < numGames:
 		g = game.Game(len(agents), NUM_DECKS)
 
@@ -253,7 +254,6 @@ def train(numAgents=3, numGames=50, isModel=False, weights = None):
 			i += 1
 			w = oldW
 			agents = oldAgents
-	
 	#Get weight vector that won the most
 	index = winners.index(max(winners))
 	return weightVector[index]
