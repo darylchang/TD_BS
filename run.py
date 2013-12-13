@@ -278,10 +278,10 @@ def main(args=None):
 		parser.add_argument(arg)
 	namespace = parser.parse_args()
 	
-	numPlayers = getattr(namespace, 'p') if getattr(namespace, 'p') else 3
-	numTrainGames = getattr(namespace, 'trainGames')if getattr(namespace, 'trainGames') else 50
-	numTestGames = getattr(namespace, 'test') if getattr(namespace, 'test') else 100
-	numRuns = getattr(namespace, 'run') if getattr(namespace, 'run') else 10
+	numPlayers = int(getattr(namespace, 'p')) if getattr(namespace, 'p') else 3
+	numTrainGames = int(getattr(namespace, 'trainGames')) if getattr(namespace, 'trainGames') else 50
+	numTestGames = int(getattr(namespace, 'test')) if getattr(namespace, 'test') else 100
+	numRuns = int(getattr(namespace, 'run')) if getattr(namespace, 'run') else 10
 	agentType = getattr(namespace, 'agent') if getattr(namespace, 'agent') else 'model'
 	oppType = getattr(namespace, 'opp') if getattr(namespace, 'opp') else 'simple'
 	isTournament = (getattr(namespace, 'tournament') == 'y')
