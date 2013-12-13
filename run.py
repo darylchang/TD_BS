@@ -155,20 +155,50 @@ def TDUpdate(state, nextState, reward, w, eta):
         w[i] += (eta * residual * gradient)
     return w
 
-def train(numAgents=3, numGames=30):
+def tournament(numPlayers, numIters, numContenders = 27):
+	tournamentArr = []
+	for i in range(numContenders):
+		tournamentArr.append(train(numPlayers, numIters))
+	
+	while(len(tournamentArr) != 1):
+		print len(tournamentArr)
+		newArr = []
+		iterable = iter(tournamentArr)
+		for i in iterable:
+			weights = [i, iterable.next(), iterable.next()]
+			print "WEIGHT"
+			print weights
+			print "WEIGHT"
+			w = train(numPlayers, numIters, weights)
+			newArr.append(w)
+			
+		tournamentArr = newArr
+	
+	return tournamentArr[0]
+
+
+#Copy of train, updates even on cycles (For tournament play)
+def train(numAgents=3, numGames=30, weights = None): 
+	print "Training on {} players for {} iterations...".format(numAgents, numGames)
 	alpha = 1e-1
 	numFeats = 8 + numAgents + NUM_CARDS #Debug 
 	
 	weightVector = []
 	for i in range(numAgents):
-		weight = [random.gauss(-1e-1, 1e-2) for _ in range(numFeats)]
+		weight = [random.gauss(1e-3, 1e-1) for _ in range(numFeats)]
 		weightVector.append(weight)
 	
-	#agents = [agent.ReflexAgent(i, logLinearEvaluation, weightVector[i]) for i in range(numAgents)]
-	agents = [agent.ModelReflexAgent(i, numAgents, logLinearEvaluation, weightVector[i]) for i in range(numAgents)]
+	if not weights:
+		agents = [agent.ModelReflexAgent(i, numAgents, logLinearEvaluation, weightVector[i]) for i in range(numAgents)]
+	else:
+		print "initialize"
+		agents = []
+		for i in range(len(weights)):
+			agents.append(agent.ModelReflexAgent(i, numAgents, logLinearEvaluation, weights[i]))
+			
 	# Initialize array of model based reflex agents
 	modelReflexAgents = [a.playerNum for a in agents if isinstance(a, agent.ModelReflexAgent)]
-
+	
 	#Single weight vector
 	#w = [random.gauss(1e-3, 1e-1) for _ in range(numFeats)]
 	#agents = [agent.ReflexAgent(i, logLinearEvaluation, w) for i in range(numAgents)]
@@ -245,12 +275,13 @@ def train(numAgents=3, numGames=30):
 			winner = g.winner()
 			weightVector[winner] = TDUpdate((g, winner),None, 1.0, weightVector[winner] ,alpha)
 			i += 1
-			#print "Noncycle"
+			print "Noncycle"
 			winners[winner] += 1
 		else:
+			i += 1
+			print "Cycle"
 			w = oldW
 			agents = oldAgents
-		#print "The winner is player {}!".format(winner)
 
 	#print weightVector #Debug
 	#print winners.index(max(winners))	
@@ -284,7 +315,6 @@ def main(args=None):
 	numTrials = 100
 	numRuns = 10
 
-	# print "Reflex agent against random agents"
 	# arr = [agent.ReflexAgent(0, logLinearEvaluation, w)]
 	# for i in range(1, numPlayers):
 	#        arr.append(agent.RandomAgent(i))
