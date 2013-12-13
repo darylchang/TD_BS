@@ -18,5 +18,5 @@ def testExtractFeatures():
 	print run.extractFeatures((g, 1))
 	print run.extractFeatures((g, 2))
 
-#testSimpleEvaluation()
+testSimpleEvaluation()
 testExtractFeatures()

@@ -105,17 +105,13 @@ class Game:
 			isValid = True
 			for card in move:
 				handCopy[card] -= 1
-				# print move, card, handCopy, handCopy[card]
 				if handCopy[card] < 0:
-					# print move, "It's invalid at {}".format(card)
 					isValid = False
-					# break
 			if isValid:
 				moves.append(move)
 
 		# Remove repeats
 		moves = [move for move in moves if sorted(move) == list(move)]
-		#print moves
 		return moves
 
 	def printTurn(self):

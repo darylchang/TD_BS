@@ -1,0 +1,33 @@
+Description of files:
+
+run.py - The main file that executes TD learning, trains, and tests agents.
+
+agent.py - Contains implementation of the different agents.
+
+game.py - Implementation of the Game class.
+
+player.py - Implementation of a player (used in the Game class).
+
+evaluation.py - Contains implementation of the simple evaluation function.
+
+test.py - Unit tests to test extractFeatures and simpleEvaluation.
+
+--------------------------------------------------------------------------
+Command line options:
+
+-train [# of training games]
+
+-run [# of runs]
+
+-p [# of players]
+
+-test [# of test games]
+
+-agent [random/simple/honest/dishonest/bs/model/reflex] (i.e. type of agent)
+
+-opp [random/simple/honest/dishonest/bs] (i.e. type of opponents)
+
+-tournament [y/n] (whether or not to use tournament-style training)
+
+-human [y/n] (y if you want to play a game against the opponents yourself)
+

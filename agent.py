@@ -25,14 +25,12 @@ class HumanAgent(Agent):
 				for j in range(hand[i]):
 					formattedHand.append(CARD_VALS[i])
 		formattedHand = ', '.join(formattedHand)
-		#print hand
 		print "Your hand is: {}".format(formattedHand)
 		while True:
 			userMove = raw_input("Please input the cards you would like to play" + \
             					  ", separated by spaces: ")
 			userMove = userMove.split()
 			userMove = tuple(sorted([CARD_VALS.index(card) for card in userMove if card in CARD_VALS]))
-			#print userMove
 			if userMove not in moves:
 				print "Please enter a valid move. Try again."
 				continue
@@ -95,11 +93,7 @@ class RandomAgent(Agent):
 				return random.choice(list(honestMoves))
 			else:
 				return random.choice(dishonestMoves)
-	
-	
-	#if moves:
-        #    return random.choice(list(moves))
-        #return None
+
 
     def getCall(self, game, verbose):
     	lastPlayer = (game.currPlayer - 1) % game.numPlayers
@@ -221,28 +215,15 @@ class ReflexAgent(Agent):
 	call BS.
 	"""
 	def getAction(self, moves, game):
-		#print "Original hand: {}".format(game.players[self.playerNum].hand)
 		scoresActions = []
 		for move in moves:
 			g = game.clone()
-			# print "Equal: ", game.players[self.playerNum].hand == g.players[self.playerNum].hand
 			g.takeAction(move, self.playerNum)
 			noCallScore = self.evaluationFunction((g, self.playerNum), self.w)
-			# TODO: Change to reflect the turn-based call rule
 			caller = random.choice([i for i in range(g.numPlayers) if i != self.playerNum])
 			g.takeCall(caller)
 			callScore = self.evaluationFunction((g, self.playerNum), self.w)
-			# if sum(game.discard) > 4:
-				# print "Original hand: ", game.players[self.playerNum].hand
-				# print "Discard: ", game.discard
-				# print "Hand: ", g.players[self.playerNum].hand
-				# print "Move: ", move
-				# print "Required card: ", game.currCard
-				# print "Discard size: ", sum(game.discard)
-				# print "No call score: ", noCallScore
-				# print "Call score: ", callScore
-				# print "\n"
-			avgScore = 0.5 * noCallScore + 0.5 * callScore #Debug
+			avgScore = 0.5 * noCallScore + 0.5 * callScore
 			scoresActions.append((move, avgScore))
 		action = max(scoresActions, key=lambda x: x[1])[0]
 		return action
@@ -263,19 +244,14 @@ class ReflexAgent(Agent):
 		callScore2 = self.evaluationFunction((g2, self.playerNum), self.w)
 
 		# Average the scores of the two scenarios
-		prob = random.random() #Debug
-		avgCallScore = prob * callScore1 + (1-prob) * callScore2 #Debug
-		# avgCallScore = 0.5 * callScore1 + 0.5 * callScore2 #Debug
-
-		#print noCallScore, avgCallScore #Debug
+		prob = random.random() 
+		avgCallScore = prob * callScore1 + (1-prob) * callScore2
 
 		if noCallScore > avgCallScore:
-			#print "Not calling!" #Debug
 			if verbose:
 				print "Player {} does not call BS.".format(self.playerNum)
 			return False
 		else:
-			#print "Calling!" #Debug
 			if verbose:
 				print "Player {} calls BS!".format(self.playerNum)
 			return True
@@ -290,8 +266,6 @@ class ModelReflexAgent(Agent):
 		self.numPlayers = numPlayers
 		self.oppLieProbs = [[0., 1.] for i in range(numPlayers)]
 		self.oppCallProbs = [[0., 1.] for i in range(numPlayers)]
-		#print self.oppLieProbs #Debug
-		#print self.oppCallProbs #Debug
 		self.evaluationFunction = evalFunction
 		self.w = w
 
@@ -308,8 +282,6 @@ class ModelReflexAgent(Agent):
 		oppNoCallProbs = [1.0 - (prob[0] / prob[1]) for prob in self.oppCallProbs]
 		probNoCall = reduce(lambda x,y: x * y, oppNoCallProbs, 1)
 		probCall = 1.0 - probNoCall
-		#print "Prob no call is ", probNoCall #Debug
-		#print "Prob call is ", probCall #Debug
 
 		for move in moves:
 			g = game.clone()
@@ -319,7 +291,7 @@ class ModelReflexAgent(Agent):
 			g.takeCall(caller)
 			callScore = self.evaluationFunction((g, self.playerNum), self.w)
 
-			avgScore = probNoCall * noCallScore + probCall * callScore #Debug
+			avgScore = probNoCall * noCallScore + probCall * callScore
 			scoresActions.append((move, avgScore))
 		action = max(scoresActions, key=lambda x: x[1])[0]
 		return action
@@ -343,18 +315,13 @@ class ModelReflexAgent(Agent):
 		currPlayer = (game.currPlayer - 1) % game.numPlayers
 		probLie = self.oppLieProbs[currPlayer][0] / self.oppLieProbs[currPlayer][1]
 		probHonest = 1.0 - probLie
-		# print "Player", (game.currPlayer - 1) % game.numPlayers, "is lying with probability ", probLie #Debug
-		avgCallScore = probHonest * callScore1 + probLie * callScore2 #Debug
-
-		#print noCallScore, avgCallScore
+		avgCallScore = probHonest * callScore1 + probLie * callScore2
 
 		if noCallScore > avgCallScore:
-			#print "Not calling!" #Debug
 			if verbose:
 				print "Player {} does not call BS.".format(self.playerNum)
 			return False
 		else:
-			#print "Calling!" #Debug
 			if verbose:
 				print "Player {} calls BS!".format(self.playerNum)
 			return True
