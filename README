@@ -29,5 +29,5 @@ Command line options:
 
 -tournament [y/n] (whether or not to use tournament-style training). Default 'n'.
 
--human [y/n] (y if you want to play a game against the opponents yourself) Default 'n'.
+-human [y/n] (y if you want to play a game against the opponents yourself). Default 'n'.
 
